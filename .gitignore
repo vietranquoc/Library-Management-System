@@ -1,0 +1,22 @@
+# ==== Spring Boot ====
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/*.log
+backend/.idea/
+backend/*.iml
+backend/out/
+
+# ==== Angular ====
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# ==== Common ====
+*.class
+.DS_Store
+.env
+.idea/
+.vscode/
+*.tmp
