@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
@@ -18,7 +20,7 @@ public class BookCopyEntity {
 
     private String barCode;
 
-    private boolean available = true;
+    private Boolean available = true;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
