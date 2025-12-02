@@ -1,4 +1,4 @@
-package com.ngv.libraryManagementSystem.service;
+package com.ngv.libraryManagementSystem.service.mail;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;

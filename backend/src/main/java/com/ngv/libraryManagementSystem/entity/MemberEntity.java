@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -25,6 +26,12 @@ public class MemberEntity {
     private String email;
 
     private String phone;
+
+    @Column(nullable = false)
+    private LocalDate joinDate;
+
+    @Column(nullable = false)
+    private String status = "ACTIVE"; // ACTIVE, INACTIVE, SUSPENDED
 
     @OneToOne
     @JoinColumn(name = "address_id")
