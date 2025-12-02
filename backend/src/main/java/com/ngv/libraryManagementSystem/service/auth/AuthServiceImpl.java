@@ -8,6 +8,8 @@ import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.entity.RoleEntity;
 import com.ngv.libraryManagementSystem.entity.UserEntity;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
+import com.ngv.libraryManagementSystem.exception.BadRequestException;
+import com.ngv.libraryManagementSystem.exception.UnauthorizedException;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
 import com.ngv.libraryManagementSystem.repository.RoleRepository;
 import com.ngv.libraryManagementSystem.repository.UserRepository;
@@ -35,7 +37,15 @@ public class AuthServiceImpl implements AuthService{
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new BadRequestException("Tên đăng nhập đã tồn tại");
+        }
+
+        if (memberRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email đã được sử dụng");
+        }
+
+        if (memberRepository.existsByPhone(request.getPhone())) {
+            throw new BadRequestException("Số điện thoại đã được sử dụng");
         }
 
         MemberEntity member = new MemberEntity();
@@ -69,10 +79,10 @@ public class AuthServiceImpl implements AuthService{
     public AuthResponse login(LoginRequest request) {
 
         UserEntity user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không đúng"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Wrong password!");
+            throw new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không đúng");
         }
 
         Map<String, Object> claims = new HashMap<>();

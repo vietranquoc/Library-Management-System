@@ -5,6 +5,7 @@ import com.ngv.libraryManagementSystem.dto.request.auth.RegisterRequest;
 import com.ngv.libraryManagementSystem.dto.response.ApiResponse;
 import com.ngv.libraryManagementSystem.dto.response.auth.AuthResponse;
 import com.ngv.libraryManagementSystem.service.auth.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,13 +21,13 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse res = authService.register(request);
         return ResponseEntity.ok(new ApiResponse<>(200, "Đăng ký thành công", res));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse res = authService.login(request);
         return ResponseEntity.ok(new ApiResponse<>(200, "Đăng nhập thành công", res));
     }
