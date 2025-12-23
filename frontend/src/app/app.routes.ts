@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Login } from './auth/pages/login/login';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,47 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/home/home').then((m) => m.Home),
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./admin/pages/dashboard/dashboard').then((m) => m.AdminDashboard),
+      },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./admin/pages/categories/categories').then((m) => m.AdminCategories),
+      },
+      {
+        path: 'books',
+        loadComponent: () =>
+          import('./admin/pages/books/books').then((m) => m.AdminBooks),
+      },
+      {
+        path: 'staff',
+        loadComponent: () =>
+          import('./admin/pages/staff/staff').then((m) => m.AdminStaff),
+      },
+      {
+        path: 'members',
+        loadComponent: () =>
+          import('./admin/pages/members/members').then((m) => m.AdminMembers),
+      },
+      {
+        path: 'loans',
+        loadComponent: () =>
+          import('./admin/pages/loans/loans').then((m) => m.AdminLoans),
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+    ],
   },
   {
     path: '**',

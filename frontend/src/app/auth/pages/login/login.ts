@@ -9,6 +9,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../dto/login-request';
+import { JwtUtil } from '../../../shared/utils/jwt.util';
 
 @Component({
   selector: 'app-login',
@@ -53,7 +54,14 @@ export class Login {
       next: (res) => {
         this.loading = false;
         this.successMessage = res.message || 'Đăng nhập thành công';
-        this.router.navigateByUrl('/home');
+        
+        // Kiểm tra role và redirect
+        const token = localStorage.getItem('access_token');
+        if (token && JwtUtil.isAdmin(token)) {
+          this.router.navigateByUrl('/admin/dashboard');
+        } else {
+          this.router.navigateByUrl('/home');
+        }
       },
       error: (err) => {
         this.loading = false;
