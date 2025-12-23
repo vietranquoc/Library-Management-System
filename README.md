@@ -28,8 +28,8 @@ A full-stack **Library Management System** built as a pet project to deepen my k
 
 - **Frontend**: Angular 17+, TypeScript, Angular Material (or Tailwind/Bootstrap – tùy bạn chọn)  
 - **Backend**: Spring Boot 3+, Spring Data JPA, Spring Security  
-- **Database**: PostgreSQL / MySQL / H2 (for development)  
-- **Authentication**: JWT or Spring Security Session (đang triển khai)  
+- **Database**: MySQL 
+- **Authentication**: JWT or Spring Security Session
 - **API**: RESTful API with clear endpoints & OpenAPI/Swagger documentation
 
 ### Purpose
