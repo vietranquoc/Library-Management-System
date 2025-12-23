@@ -47,7 +47,7 @@ export class AdminStaff {
       nonNullable: true,
       validators: [
         Validators.required,
-        Validators.pattern(/^[0-9]{10,11}$/),
+        Validators.pattern(/^0(3|5|7|8|9)[0-9]{8}$/),
       ],
     }),
   });

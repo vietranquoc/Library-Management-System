@@ -141,10 +141,12 @@
                   id="phone"
                   type="text"
                   formControlName="phone"
-                  placeholder="10-11 chữ số"
+                  placeholder="0(3|5|7|8|9)xxxxxxx"
                 />
                 @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
-                  <span class="error-text">Số điện thoại phải có 10-11 chữ số</span>
+                  <span class="error-text">
+                    Số điện thoại phải là số di động hợp lệ.
+                  </span>
                 }
               </div>
             </div>
