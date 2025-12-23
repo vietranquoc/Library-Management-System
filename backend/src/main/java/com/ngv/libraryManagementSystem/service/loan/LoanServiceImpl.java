@@ -3,10 +3,11 @@ package com.ngv.libraryManagementSystem.service.loan;
 import com.ngv.libraryManagementSystem.dto.request.LoanRequest;
 import com.ngv.libraryManagementSystem.dto.request.ReturnBookRequest;
 import com.ngv.libraryManagementSystem.dto.response.LoanResponse;
-import com.ngv.libraryManagementSystem.entity.BookCopyEntity;
+import com.ngv.libraryManagementSystem.entity.BookEntity;
 import com.ngv.libraryManagementSystem.entity.LoanEntity;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
-import com.ngv.libraryManagementSystem.repository.BookCopyRepository;
+import com.ngv.libraryManagementSystem.exception.BadRequestException;
+import com.ngv.libraryManagementSystem.repository.BookRepository;
 import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
 import com.ngv.libraryManagementSystem.service.reservation.ReservationService;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository loanRepository;
-    private final BookCopyRepository bookCopyRepository;
+    private final BookRepository bookRepository;
     private final MemberRepository memberRepository;
     private final FineService fineService;
     private final ReservationService reservationService;
@@ -35,26 +36,29 @@ public class LoanServiceImpl implements LoanService {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Member not found with id: " + memberId));
 
-        BookCopyEntity bookCopy = bookCopyRepository.findById(request.getBookCopyId())
-                .orElseThrow(() -> new RuntimeException("Book copy not found with id: " + request.getBookCopyId()));
+        // Với cấu trúc DB mới, LoanEntity tham chiếu trực tiếp BookEntity.
+        // LoanRequest.bookCopyId hiện được hiểu là bookId.
+        BookEntity book = bookRepository.findById(request.getBookCopyId())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy sách với id: " + request.getBookCopyId()));
 
-        if (!Boolean.TRUE.equals(bookCopy.getAvailable())) {
-            throw new RuntimeException("Book copy is not available");
+        if (book.getQuantity() == null || book.getQuantity() <= 0) {
+            throw new BadRequestException("Sách này chưa được cấu hình số lượng");
         }
 
-        // Check if member already has an active loan for this copy
-        if (loanRepository.findByBookCopyAndReturnedDateIsNull(bookCopy).isPresent()) {
-            throw new RuntimeException("This book copy is already borrowed");
+        // Đếm số lượng lượt mượn hiện tại (chưa trả) của cuốn sách này
+        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
+        if (activeLoans >= book.getQuantity()) {
+            throw new BadRequestException("Hiện không còn bản nào của sách này để mượn");
         }
+
+        // TODO: Nếu muốn giới hạn 1 member không được mượn trùng cùng 1 sách,
+        // có thể kiểm tra thêm tại đây.
 
         LoanEntity loan = new LoanEntity();
         loan.setMember(member);
-        loan.setBookCopy(bookCopy);
+        loan.setBook(book);
         loan.setLoanDate(LocalDate.now());
         loan.setDueDate(LocalDate.now().plusDays(7));
-
-        bookCopy.setAvailable(false);
-        bookCopyRepository.save(bookCopy);
 
         LoanEntity savedLoan = loanRepository.save(loan);
         return mapToLoanResponse(savedLoan);
@@ -75,8 +79,6 @@ public class LoanServiceImpl implements LoanService {
         }
 
         loan.setReturnedDate(LocalDate.now());
-        loan.getBookCopy().setAvailable(true);
-        bookCopyRepository.save(loan.getBookCopy());
 
         LoanEntity savedLoan = loanRepository.save(loan);
 
@@ -86,7 +88,7 @@ public class LoanServiceImpl implements LoanService {
         }
 
         // Check for pending reservations and notify
-        reservationService.checkAndNotifyReservations(savedLoan.getBookCopy().getBook().getId());
+        reservationService.checkAndNotifyReservations(savedLoan.getBook().getId());
 
         return mapToLoanResponse(savedLoan);
     }
@@ -125,11 +127,11 @@ public class LoanServiceImpl implements LoanService {
                 .loanDate(loan.getLoanDate())
                 .dueDate(loan.getDueDate())
                 .returnedDate(loan.getReturnedDate())
-                .book(loan.getBookCopy().getBook() != null ?
+                .book(loan.getBook() != null ?
                         LoanResponse.BookInfo.builder()
-                                .id(loan.getBookCopy().getBook().getId())
-                                .title(loan.getBookCopy().getBook().getTitle())
-                                .isbn(loan.getBookCopy().getBook().getIsbn())
+                                .id(loan.getBook().getId())
+                                .title(loan.getBook().getTitle())
+                                .isbn(loan.getBook().getIsbn())
                                 .build() : null)
                 .member(loan.getMember() != null ?
                         LoanResponse.MemberInfo.builder()
@@ -138,7 +140,7 @@ public class LoanServiceImpl implements LoanService {
                                 .lastName(loan.getMember().getLastName())
                                 .email(loan.getMember().getEmail())
                                 .build() : null)
-                .bookCopyBarCode(loan.getBookCopy().getBarCode())
+                .bookCopyBarCode(null)
                 .build();
     }
 }

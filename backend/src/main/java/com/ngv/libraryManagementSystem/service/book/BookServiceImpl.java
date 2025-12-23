@@ -34,10 +34,6 @@ public class BookServiceImpl implements BookService {
     }
 
     private BookResponse mapToBookResponse(BookEntity book) {
-        int totalCopies = book.getCopies() != null ? book.getCopies().size() : 0;
-        int availableCopies = book.getCopies() != null ? 
-                (int) book.getCopies().stream().filter(copy -> Boolean.TRUE.equals(copy.getAvailable())).count() : 0;
-
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -48,23 +44,15 @@ public class BookServiceImpl implements BookService {
                                 .id(book.getCategory().getId())
                                 .name(book.getCategory().getName())
                                 .build() : null)
-                .authors(book.getAuthors() != null ? 
+                .authors(book.getAuthors() != null ?
                         book.getAuthors().stream()
                                 .map(author -> BookResponse.AuthorInfo.builder()
                                         .id(author.getId())
                                         .name(author.getName())
                                         .build())
                                 .collect(Collectors.toSet()) : null)
-                .copies(book.getCopies() != null ? 
-                        book.getCopies().stream()
-                                .map(copy -> BookResponse.BookCopyInfo.builder()
-                                        .id(copy.getId())
-                                        .barCode(copy.getBarCode())
-                                        .available(copy.getAvailable())
-                                        .build())
-                                .collect(Collectors.toList()) : null)
-                .totalCopies(totalCopies)
-                .availableCopies(availableCopies)
+                .totalCopies(book.getQuantity() != null ? book.getQuantity() : 0)
+                .availableCopies(book.getQuantity() != null ? book.getQuantity() : 0)
                 .build();
     }
 }

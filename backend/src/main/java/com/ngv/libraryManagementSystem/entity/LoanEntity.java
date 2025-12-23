@@ -30,6 +30,6 @@ public class LoanEntity {
     private MemberEntity member;
 
     @ManyToOne
-    @JoinColumn(name = "book_copy_id")
-    private BookCopyEntity bookCopy;
+    @JoinColumn(name = "book_id")
+    private BookEntity book;
 }

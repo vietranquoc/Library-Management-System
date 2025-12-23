@@ -25,5 +25,17 @@ export class AdminService {
   createStaff(request: CreateStaffRequest): Observable<ApiResponse<number>> {
     return this.http.post<ApiResponse<number>>(`${this.baseUrl}/staff`, request);
   }
+
+  getCategories(): Observable<ApiResponse<Array<{ id: number; name: string }>>> {
+    return this.http.get<ApiResponse<Array<{ id: number; name: string }>>>(
+      `${this.baseUrl}/categories`,
+    );
+  }
+
+  getAuthors(): Observable<ApiResponse<Array<{ id: number; name: string }>>> {
+    return this.http.get<ApiResponse<Array<{ id: number; name: string }>>>(
+      `${this.baseUrl}/authors`,
+    );
+  }
 }
 

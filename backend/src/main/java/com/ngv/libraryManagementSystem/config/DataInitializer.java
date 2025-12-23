@@ -3,6 +3,7 @@ package com.ngv.libraryManagementSystem.config;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.entity.RoleEntity;
 import com.ngv.libraryManagementSystem.entity.UserEntity;
+import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
 import com.ngv.libraryManagementSystem.repository.RoleRepository;
@@ -52,7 +53,7 @@ public class DataInitializer implements CommandLineRunner {
             adminMember.setEmail("admin@library.com");
             adminMember.setPhone("0000000000");
             adminMember.setJoinDate(LocalDate.now());
-            adminMember.setStatus("ACTIVE");
+            adminMember.setStatus(MemberStatusEnum.ACTIVE);
             adminMember = memberRepository.save(adminMember);
 
             UserEntity adminUser = new UserEntity();
@@ -74,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
             staffMember.setEmail("staff@library.com");
             staffMember.setPhone("0000000001");
             staffMember.setJoinDate(LocalDate.now());
-            staffMember.setStatus("ACTIVE");
+            staffMember.setStatus(MemberStatusEnum.ACTIVE);
             staffMember = memberRepository.save(staffMember);
 
             UserEntity staffUser = new UserEntity();

@@ -62,7 +62,7 @@ public class MemberServiceImpl implements MemberService {
                 .email(member.getEmail())
                 .phone(member.getPhone())
                 .joinDate(member.getJoinDate())
-                .status(member.getStatus())
+                .status(member.getStatus().name())
                 .address(member.getAddress() != null ?
                         MemberResponse.AddressInfo.builder()
                                 .id(member.getAddress().getId())
@@ -76,11 +76,11 @@ public class MemberServiceImpl implements MemberService {
                                 .map(loan -> MemberResponse.LoanInfo.builder()
                                         .id(loan.getId())
                                         .loanDate(loan.getLoanDate())
-                                        .dueDate(loan.getDueDate())
-                                        .returnedDate(loan.getReturnedDate())
-                                        .bookTitle(loan.getBookCopy().getBook() != null ?
-                                                loan.getBookCopy().getBook().getTitle() : null)
-                                        .bookCopyBarCode(loan.getBookCopy().getBarCode())
+                                .dueDate(loan.getDueDate())
+                                .returnedDate(loan.getReturnedDate())
+                                .bookTitle(loan.getBook() != null ?
+                                        loan.getBook().getTitle() : null)
+                                .bookCopyBarCode(null)
                                         .build())
                                 .collect(Collectors.toList()) : null)
                 .reservations(member.getReservations() != null ?
@@ -89,8 +89,8 @@ public class MemberServiceImpl implements MemberService {
                                         .id(reservation.getId())
                                         .reservationDate(reservation.getReservationDate())
                                         .notified(reservation.getNotified())
-                                        .bookTitle(reservation.getBookCopy().getBook() != null ?
-                                                reservation.getBookCopy().getBook().getTitle() : null)
+                                        .bookTitle(reservation.getBook() != null ?
+                                                reservation.getBook().getTitle() : null)
                                         .build())
                                 .collect(Collectors.toList()) : null)
                 .fines(member.getFines() != null ?

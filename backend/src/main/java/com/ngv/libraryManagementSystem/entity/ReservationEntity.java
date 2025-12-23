@@ -1,5 +1,6 @@
 package com.ngv.libraryManagementSystem.entity;
 
+import com.ngv.libraryManagementSystem.enums.ReservationStatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,11 +23,15 @@ public class ReservationEntity {
 
     private Boolean notified = false; // đã gửi mail hay chưa
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReservationStatusEnum status;
+
     @ManyToOne
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
     @ManyToOne
-    @JoinColumn(name = "book_copy_id")
-    private BookCopyEntity bookCopy;
+    @JoinColumn(name = "book_id")
+    private BookEntity book;
 }

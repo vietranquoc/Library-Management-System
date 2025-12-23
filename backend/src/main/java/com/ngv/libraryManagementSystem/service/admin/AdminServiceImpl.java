@@ -3,8 +3,11 @@ package com.ngv.libraryManagementSystem.service.admin;
 import com.ngv.libraryManagementSystem.dto.request.admin.CreateBookRequest;
 import com.ngv.libraryManagementSystem.dto.request.admin.CreateCategoryRequest;
 import com.ngv.libraryManagementSystem.dto.request.admin.CreateStaffRequest;
+import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
+import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
 import com.ngv.libraryManagementSystem.entity.*;
+import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
 import com.ngv.libraryManagementSystem.exception.BadRequestException;
 import com.ngv.libraryManagementSystem.repository.*;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,14 +56,43 @@ public class AdminServiceImpl implements AdminService {
         book.setTitle(request.getTitle());
         book.setPublicationYear(request.getPublicationYear());
         book.setIsbn(request.getIsbn());
+        book.setQuantity(request.getQuantity());
+        book.setDescription(request.getDescription());
+        book.setImage(request.getImage());
         book.setCategory(category);
 
+        // Xử lý danh sách tác giả (cả theo id và theo tên)
+        Set<AuthorEntity> authors = null;
+
         if (request.getAuthorIds() != null && !request.getAuthorIds().isEmpty()) {
-            Set<AuthorEntity> authors = authorRepository.findAllById(request.getAuthorIds())
-                    .stream().collect(Collectors.toSet());
+            authors = authorRepository.findAllById(request.getAuthorIds())
+                    .stream()
+                    .collect(Collectors.toSet());
             if (authors.isEmpty()) {
                 throw new BadRequestException("Không tìm thấy tác giả với danh sách id đã cung cấp");
             }
+        }
+
+        if (request.getAuthorNames() != null && !request.getAuthorNames().isEmpty()) {
+            if (authors == null) {
+                authors = new java.util.HashSet<>();
+            }
+            for (String rawName : request.getAuthorNames()) {
+                if (rawName == null) continue;
+                String name = rawName.trim();
+                if (name.isEmpty()) continue;
+
+                AuthorEntity author = authorRepository.findByNameIgnoreCase(name)
+                        .orElseGet(() -> {
+                            AuthorEntity a = new AuthorEntity();
+                            a.setName(name);
+                            return authorRepository.save(a);
+                        });
+                authors.add(author);
+            }
+        }
+
+        if (authors != null && !authors.isEmpty()) {
             book.setAuthors(authors);
         }
 
@@ -88,7 +121,7 @@ public class AdminServiceImpl implements AdminService {
         member.setEmail(request.getEmail());
         member.setPhone(request.getPhone());
         member.setJoinDate(LocalDate.now());
-        member.setStatus("ACTIVE");
+        member.setStatus(MemberStatusEnum.ACTIVE);
         memberRepository.save(member);
 
         RoleEntity staffRole = roleRepository.findByName(RoleEnum.ROLE_STAFF.name());
@@ -106,11 +139,23 @@ public class AdminServiceImpl implements AdminService {
         return user.getId();
     }
 
-    private BookResponse mapToBookResponse(BookEntity book) {
-        int totalCopies = book.getCopies() != null ? book.getCopies().size() : 0;
-        int availableCopies = book.getCopies() != null ?
-                (int) book.getCopies().stream().filter(copy -> Boolean.TRUE.equals(copy.getAvailable())).count() : 0;
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategorySimpleResponse> getAllCategories() {
+        return categoryRepository.findAll().stream()
+                .map(c -> new CategorySimpleResponse(c.getId(), c.getName()))
+                .collect(Collectors.toList());
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuthorSimpleResponse> getAllAuthors() {
+        return authorRepository.findAll().stream()
+                .map(a -> new AuthorSimpleResponse(a.getId(), a.getName()))
+                .collect(Collectors.toList());
+    }
+
+    private BookResponse mapToBookResponse(BookEntity book) {
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -128,16 +173,8 @@ public class AdminServiceImpl implements AdminService {
                                         .name(author.getName())
                                         .build())
                                 .collect(Collectors.toSet()) : null)
-                .copies(book.getCopies() != null ?
-                        book.getCopies().stream()
-                                .map(copy -> BookResponse.BookCopyInfo.builder()
-                                        .id(copy.getId())
-                                        .barCode(copy.getBarCode())
-                                        .available(copy.getAvailable())
-                                        .build())
-                                .collect(Collectors.toList()) : null)
-                .totalCopies(totalCopies)
-                .availableCopies(availableCopies)
+                .totalCopies(book.getQuantity() != null ? book.getQuantity() : 0)
+                .availableCopies(book.getQuantity() != null ? book.getQuantity() : 0)
                 .build();
     }
 }

@@ -141,8 +141,8 @@ public class FineServiceImpl implements FineService {
                                 .id(fine.getLoan().getId())
                                 .loanDate(fine.getLoan().getLoanDate())
                                 .dueDate(fine.getLoan().getDueDate())
-                                .bookTitle(fine.getLoan().getBookCopy().getBook() != null ?
-                                        fine.getLoan().getBookCopy().getBook().getTitle() : null)
+                                .bookTitle(fine.getLoan().getBook() != null ?
+                                        fine.getLoan().getBook().getTitle() : null)
                                 .build() : null)
                 .build();
     }

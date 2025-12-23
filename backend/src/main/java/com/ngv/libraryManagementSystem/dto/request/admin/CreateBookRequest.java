@@ -23,6 +23,16 @@ public class CreateBookRequest {
     @Size(max = 50, message = "ISBN không được vượt quá 50 ký tự")
     private String isbn;
 
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 0, message = "Số lượng không hợp lệ")
+    private Integer quantity;
+
+    @Size(max = 1000, message = "Mô tả không được vượt quá 1000 ký tự")
+    private String description;
+
+    @NotBlank(message = "Ảnh bìa không được để trống")
+    private String image;
+
     @NotNull(message = "Thể loại không được để trống")
     private Long categoryId;
 
@@ -31,6 +41,12 @@ public class CreateBookRequest {
      * Có thể để trống nếu bạn muốn thêm sách trước rồi gán tác giả sau.
      */
     private Set<Long> authorIds;
+
+    /**
+     * Danh sách tên tác giả.
+     * Nếu tên đã tồn tại trong hệ thống thì sẽ sử dụng lại, nếu chưa có sẽ tạo mới.
+     */
+    private Set<String> authorNames;
 }
 
 

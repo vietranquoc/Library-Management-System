@@ -26,6 +26,14 @@ public class BookEntity {
     @Column(unique = true)
     private String isbn;
 
+    private Integer quantity;
+
+    @Column(columnDefinition = "text")
+    private String description;
+
+    @Column(columnDefinition = "json",  nullable = false)
+    private String image;
+
     @ManyToOne
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
@@ -39,5 +47,8 @@ public class BookEntity {
     private Set<AuthorEntity> authors;
 
     @OneToMany(mappedBy = "book")
-    private List<BookCopyEntity> copies;
+    private List<LoanEntity> loans;
+
+    @OneToMany(mappedBy = "book")
+    private List<ReservationEntity> reservations;
 }

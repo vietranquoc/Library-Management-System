@@ -66,29 +66,72 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="categoryId">ID Thể loại *</label>
-              <input
-                id="categoryId"
-                type="number"
-                formControlName="categoryId"
-                placeholder="Nhập ID thể loại (số)"
-              />
-              @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
-                <span class="error-text">ID thể loại là bắt buộc</span>
-              }
-              <small class="help-text">Bạn cần tạo thể loại trước và lấy ID từ đó</small>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="quantity">Số lượng *</label>
+                <input
+                  id="quantity"
+                  type="number"
+                  formControlName="quantity"
+                  placeholder="Ví dụ: 10"
+                />
+                @if (form.get('quantity')?.invalid && form.get('quantity')?.touched) {
+                  <span class="error-text">Số lượng là bắt buộc và phải >= 0</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="image">Ảnh bìa (URL)</label>
+                <input
+                  id="image"
+                  type="text"
+                  formControlName="image"
+                  placeholder="https://..."
+                />
+                @if (form.get('image')?.invalid && form.get('image')?.touched) {
+                  <span class="error-text">Ảnh bìa là bắt buộc</span>
+                }
+              </div>
             </div>
 
             <div class="form-group">
-              <label for="authorIds">ID Tác giả (tùy chọn)</label>
+              <label for="description">Mô tả</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="4"
+                placeholder="Mô tả ngắn về nội dung sách..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="categoryId">Thể loại *</label>
+              <select
+                id="categoryId"
+                formControlName="categoryId"
+                (change)="onCategoryChange()"
+              >
+                <option [ngValue]="null" disabled>-- Chọn thể loại --</option>
+                @for (c of categories; track c.id) {
+                  <option [ngValue]="c.id">
+                    {{ c.name }}
+                  </option>
+                }
+                <option [ngValue]="-1">➕ Thêm thể loại mới...</option>
+              </select>
+              @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
+                <span class="error-text">Thể loại là bắt buộc</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="authorNames">Tác giả (tùy chọn)</label>
               <input
-                id="authorIds"
+                id="authorNames"
                 type="text"
-                formControlName="authorIds"
-                placeholder="Nhập ID tác giả, cách nhau bởi dấu phẩy (ví dụ: 1, 2, 3)"
+                formControlName="authorNames"
+                placeholder="Nhập tên tác giả, cách nhau bởi dấu phẩy (ví dụ: Nguyễn Nhật Ánh, J. K. Rowling)"
               />
-              <small class="help-text">Có thể để trống và thêm tác giả sau</small>
             </div>
 
             <button type="submit" class="submit-btn" [disabled]="loading">

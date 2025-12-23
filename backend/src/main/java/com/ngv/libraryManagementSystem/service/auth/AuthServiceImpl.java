@@ -7,6 +7,7 @@ import com.ngv.libraryManagementSystem.dto.response.auth.AuthResponse;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.entity.RoleEntity;
 import com.ngv.libraryManagementSystem.entity.UserEntity;
+import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
 import com.ngv.libraryManagementSystem.exception.BadRequestException;
 import com.ngv.libraryManagementSystem.exception.UnauthorizedException;
@@ -54,7 +55,7 @@ public class AuthServiceImpl implements AuthService{
         member.setEmail(request.getEmail());
         member.setPhone(request.getPhone());
         member.setJoinDate(LocalDate.now());
-        member.setStatus("ACTIVE");
+        member.setStatus(MemberStatusEnum.ACTIVE);
         memberRepository.save(member);
 
         RoleEntity role = roleRepository.findByName(RoleEnum.ROLE_MEMBER.name());

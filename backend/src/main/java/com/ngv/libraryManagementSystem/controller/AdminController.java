@@ -5,15 +5,16 @@ import com.ngv.libraryManagementSystem.dto.request.admin.CreateCategoryRequest;
 import com.ngv.libraryManagementSystem.dto.request.admin.CreateStaffRequest;
 import com.ngv.libraryManagementSystem.dto.response.ApiResponse;
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
+import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
+import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
 import com.ngv.libraryManagementSystem.service.admin.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -35,6 +36,13 @@ public class AdminController {
         return ResponseEntity.ok(new ApiResponse<>(200, "Thêm thể loại thành công", null));
     }
 
+    @GetMapping("/categories")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<ApiResponse<List<CategorySimpleResponse>>> getAllCategories() {
+        List<CategorySimpleResponse> categories = adminService.getAllCategories();
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách thể loại thành công", categories));
+    }
+
     /**
      * Thêm mới sách (chỉ thông tin sách, không tạo bản sao/copy).
      * ADMIN hoặc STAFF đều có thể thao tác.
@@ -46,6 +54,13 @@ public class AdminController {
     ) {
         BookResponse book = adminService.createBook(request);
         return ResponseEntity.ok(new ApiResponse<>(200, "Thêm sách thành công", book));
+    }
+
+    @GetMapping("/authors")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
+    public ResponseEntity<ApiResponse<List<AuthorSimpleResponse>>> getAllAuthors() {
+        List<AuthorSimpleResponse> authors = adminService.getAllAuthors();
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách tác giả thành công", authors));
     }
 
     /**

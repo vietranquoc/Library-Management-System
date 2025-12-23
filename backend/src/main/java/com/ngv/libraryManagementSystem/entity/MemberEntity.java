@@ -1,10 +1,8 @@
 package com.ngv.libraryManagementSystem.entity;
 
+import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +29,8 @@ public class MemberEntity {
     private LocalDate joinDate;
 
     @Column(nullable = false)
-    private String status = "ACTIVE"; // ACTIVE, INACTIVE, SUSPENDED
+    @Enumerated(EnumType.STRING)
+    private MemberStatusEnum status = MemberStatusEnum.ACTIVE;
 
     @OneToOne
     @JoinColumn(name = "address_id")
