@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { JwtUtil } from '../../../shared/utils/jwt.util';
+import { AdminSidebar } from '../../../shared/components/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AdminSidebar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

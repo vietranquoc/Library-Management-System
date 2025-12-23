@@ -9,11 +9,12 @@ import {
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { CreateStaffRequest } from '../../dto/create-staff-request';
+import { AdminSidebar } from '../../../shared/components/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-admin-staff',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminSidebar],
   templateUrl: './staff.html',
   styleUrl: './staff.scss',
 })

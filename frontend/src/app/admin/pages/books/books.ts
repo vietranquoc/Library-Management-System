@@ -9,11 +9,12 @@ import {
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { CreateBookRequest } from '../../dto/create-book-request';
+import { AdminSidebar } from '../../../shared/components/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-admin-books',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminSidebar],
   templateUrl: './books.html',
   styleUrl: './books.scss',
 })

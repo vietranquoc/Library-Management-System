@@ -3,11 +3,12 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MemberService } from '../../services/member.service';
 import { MemberResponse } from '../../services/member.service';
+import { AdminSidebar } from '../../../shared/components/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-admin-members',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AdminSidebar],
   templateUrl: './members.html',
   styleUrl: './members.scss',
 })

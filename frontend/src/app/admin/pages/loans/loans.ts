@@ -8,11 +8,12 @@ import {
 import { RouterLink } from '@angular/router';
 import { LoanService } from '../../services/loan.service';
 import { LoanResponse } from '../../services/loan.service';
+import { AdminSidebar } from '../../../shared/components/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-admin-loans',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, AdminSidebar],
   templateUrl: './loans.html',
   styleUrl: './loans.scss',
 })

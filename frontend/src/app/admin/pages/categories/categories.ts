@@ -9,11 +9,12 @@ import {
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { CreateCategoryRequest } from '../../dto/create-category-request';
+import { AdminSidebar } from '../../../shared/components/admin-sidebar/admin-sidebar';
 
 @Component({
   selector: 'app-admin-categories',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminSidebar],
   templateUrl: './categories.html',
   styleUrl: './categories.scss',
 })
