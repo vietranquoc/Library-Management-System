@@ -1,0 +1,59 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Đăng nhập</h2>
+    <p class="subtitle">Đăng nhập để sử dụng hệ thống quản lý thư viện</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Tên đăng nhập</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="Nhập tên đăng nhập"
+        />
+        @if (form.controls.username.touched && form.controls.username.invalid) {
+          <small class="error">Tên đăng nhập không được để trống</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mật khẩu</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Nhập mật khẩu"
+        />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <small class="error">Mật khẩu không được để trống</small>
+        }
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert error">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (successMessage) {
+        <div class="alert success">
+          {{ successMessage }}
+        </div>
+      }
+
+      <button type="submit" [disabled]="loading">
+        @if (!loading) {
+          Đăng nhập
+        } @else {
+          Đang xử lý...
+        }
+      </button>
+    </form>
+
+    <p class="switch-auth">
+      Chưa có tài khoản?
+      <a routerLink="/auth/register">Đăng ký ngay</a>
+    </p>
+  </div>
+</div>

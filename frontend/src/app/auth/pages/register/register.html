@@ -1,0 +1,121 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Đăng ký</h2>
+    <p class="subtitle">Tạo tài khoản để sử dụng hệ thống quản lý thư viện</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">Họ</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            placeholder="Nguyễn"
+          />
+          @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+            <small class="error">Họ không được để trống</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Tên</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            placeholder="Văn A"
+          />
+          @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+            <small class="error">Tên không được để trống</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Tên đăng nhập</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="it.nguyen"
+        />
+        @if (form.controls.username.touched && form.controls.username.invalid) {
+          <small class="error">
+            Tên đăng nhập phải có ít nhất 3 ký tự
+          </small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="email@domain.com"
+        />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <small class="error">Email không hợp lệ</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Số điện thoại</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          placeholder="09xxxxxxxx"
+        />
+        @if (form.controls.phone.touched && form.controls.phone.invalid) {
+          <small class="error">
+            Số điện thoại phải có 10-11 chữ số
+          </small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mật khẩu</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Ít nhất 6 ký tự"
+        />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <small class="error">
+            Mật khẩu phải có ít nhất 6 ký tự
+          </small>
+        }
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert error">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (successMessage) {
+        <div class="alert success">
+          {{ successMessage }}
+        </div>
+      }
+
+      <button type="submit" [disabled]="loading">
+        @if (!loading) {
+          Đăng ký
+        } @else {
+          Đang xử lý...
+        }
+      </button>
+    </form>
+
+    <p class="switch-auth">
+      Đã có tài khoản?
+      <a routerLink="/auth/login">Đăng nhập</a>
+    </p>
+  </div>
+</div>
+
+
