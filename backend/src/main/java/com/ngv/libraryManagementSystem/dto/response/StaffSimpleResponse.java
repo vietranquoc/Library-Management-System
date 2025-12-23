@@ -7,10 +7,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategorySimpleResponse {
+public class StaffSimpleResponse {
     private Long id;
-    private String name;
-    private String description;
+    private String username;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phone;
 }
 
 

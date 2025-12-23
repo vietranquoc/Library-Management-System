@@ -22,6 +22,7 @@ export class AdminCategories implements OnInit {
   loading = false;
   errorMessage = '';
   successMessage = '';
+  categories: Array<{ id: number; name: string; description?: string }> = [];
 
   form = new FormGroup({
     name: new FormControl<string>('', {
@@ -35,7 +36,20 @@ export class AdminCategories implements OnInit {
 
   constructor(private readonly adminService: AdminService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.adminService.getCategories().subscribe({
+      next: (res) => {
+        this.categories = res.data || [];
+      },
+      error: () => {
+        this.categories = [];
+      },
+    });
+  }
 
   onSubmit(): void {
     this.errorMessage = '';
@@ -54,13 +68,22 @@ export class AdminCategories implements OnInit {
         this.loading = false;
         this.successMessage = res.message || 'Thêm thể loại thành công';
         this.form.reset();
+        this.loadCategories();
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage =
-          err?.error?.message || 'Thêm thể loại thất bại. Vui lòng thử lại.';
+        this.errorMessage = this.getErrorMessage(err, 'Thêm thể loại thất bại. Vui lòng thử lại.');
       },
     });
+  }
+
+  private getErrorMessage(err: any, fallback: string): string {
+    return (
+      err?.error?.message ||
+      err?.error?.errors?.[0]?.defaultMessage ||
+      err?.message ||
+      fallback
+    );
   }
 }
 

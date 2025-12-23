@@ -1,11 +1,12 @@
 package com.ngv.libraryManagementSystem.service.admin;
 
-import com.ngv.libraryManagementSystem.dto.request.admin.CreateBookRequest;
-import com.ngv.libraryManagementSystem.dto.request.admin.CreateCategoryRequest;
-import com.ngv.libraryManagementSystem.dto.request.admin.CreateStaffRequest;
+import com.ngv.libraryManagementSystem.dto.request.CreateBookRequest;
+import com.ngv.libraryManagementSystem.dto.request.CreateCategoryRequest;
+import com.ngv.libraryManagementSystem.dto.request.CreateStaffRequest;
 import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
 import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
+import com.ngv.libraryManagementSystem.dto.response.StaffSimpleResponse;
 import com.ngv.libraryManagementSystem.entity.*;
 import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
@@ -143,7 +144,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(readOnly = true)
     public List<CategorySimpleResponse> getAllCategories() {
         return categoryRepository.findAll().stream()
-                .map(c -> new CategorySimpleResponse(c.getId(), c.getName()))
+                .map(c -> new CategorySimpleResponse(c.getId(), c.getName(), c.getDescription()))
                 .collect(Collectors.toList());
     }
 
@@ -152,6 +153,29 @@ public class AdminServiceImpl implements AdminService {
     public List<AuthorSimpleResponse> getAllAuthors() {
         return authorRepository.findAll().stream()
                 .map(a -> new AuthorSimpleResponse(a.getId(), a.getName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StaffSimpleResponse> getAllStaffs() {
+        RoleEntity staffRole = roleRepository.findByName(RoleEnum.ROLE_STAFF.name());
+        if (staffRole == null) {
+            throw new BadRequestException("Không tìm thấy role STAFF trong hệ thống");
+        }
+
+        return userRepository.findByRolesContaining(staffRole).stream()
+                .map(user -> {
+                    MemberEntity m = user.getMember();
+                    return new StaffSimpleResponse(
+                            user.getId(),
+                            user.getUsername(),
+                            m != null ? m.getFirstName() : null,
+                            m != null ? m.getLastName() : null,
+                            m != null ? m.getEmail() : null,
+                            m != null ? m.getPhone() : null
+                    );
+                })
                 .collect(Collectors.toList());
     }
 

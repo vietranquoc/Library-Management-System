@@ -31,7 +31,8 @@ public class BookEntity {
     @Column(columnDefinition = "text")
     private String description;
 
-    @Column(columnDefinition = "json",  nullable = false)
+    @Lob
+    @Column(columnDefinition = "longtext", nullable = false)
     private String image;
 
     @ManyToOne

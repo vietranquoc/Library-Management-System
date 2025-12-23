@@ -10,138 +10,232 @@
     <app-admin-sidebar></app-admin-sidebar>
 
     <main class="admin-main">
-      <div class="page-content">
-        <h1>Quản lý Sách</h1>
+      <div class="page-content wide">
+        <div class="page-header">
+          <div>
+            <h1>Quản lý Sách</h1>
+            <p class="page-subtitle">Xem danh sách sách và thêm mới</p>
+          </div>
+        </div>
 
-        <div class="form-card">
-          <h2>Thêm sách mới</h2>
+        <div class="card stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Tổng sách</div>
+            <div class="stat-value">{{ totalBooks }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Còn sẵn</div>
+            <div class="stat-value">{{ availableSum }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Đang mượn</div>
+            <div class="stat-value">{{ borrowedSum }}</div>
+          </div>
+        </div>
 
-          @if (errorMessage) {
-            <div class="alert alert-error">{{ errorMessage }}</div>
-          }
-
-          @if (successMessage) {
-            <div class="alert alert-success">{{ successMessage }}</div>
-          }
-
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-              <label for="title">Tiêu đề sách *</label>
+        <div class="content-grid">
+          <div class="card list-card">
+            <div class="list-toolbar">
               <input
-                id="title"
                 type="text"
-                formControlName="title"
-                placeholder="Nhập tiêu đề sách"
-              />
-              @if (form.get('title')?.invalid && form.get('title')?.touched) {
-                <span class="error-text">Tiêu đề sách là bắt buộc</span>
-              }
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="isbn">ISBN *</label>
-                <input
-                  id="isbn"
-                  type="text"
-                  formControlName="isbn"
-                  placeholder="Ví dụ: 978-0-123456-78-9"
-                />
-                @if (form.get('isbn')?.invalid && form.get('isbn')?.touched) {
-                  <span class="error-text">ISBN là bắt buộc</span>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="publicationYear">Năm xuất bản *</label>
-                <input
-                  id="publicationYear"
-                  type="number"
-                  formControlName="publicationYear"
-                  placeholder="Ví dụ: 2024"
-                />
-                @if (form.get('publicationYear')?.invalid && form.get('publicationYear')?.touched) {
-                  <span class="error-text">Năm xuất bản là bắt buộc và phải >= 0</span>
-                }
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="quantity">Số lượng *</label>
-                <input
-                  id="quantity"
-                  type="number"
-                  formControlName="quantity"
-                  placeholder="Ví dụ: 10"
-                />
-                @if (form.get('quantity')?.invalid && form.get('quantity')?.touched) {
-                  <span class="error-text">Số lượng là bắt buộc và phải >= 0</span>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="image">Ảnh bìa (URL)</label>
-                <input
-                  id="image"
-                  type="text"
-                  formControlName="image"
-                  placeholder="https://..."
-                />
-                @if (form.get('image')?.invalid && form.get('image')?.touched) {
-                  <span class="error-text">Ảnh bìa là bắt buộc</span>
-                }
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="description">Mô tả</label>
-              <textarea
-                id="description"
-                formControlName="description"
-                rows="4"
-                placeholder="Mô tả ngắn về nội dung sách..."
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="categoryId">Thể loại *</label>
-              <select
-                id="categoryId"
-                formControlName="categoryId"
-                (change)="onCategoryChange()"
-              >
-                <option [ngValue]="null" disabled>-- Chọn thể loại --</option>
-                @for (c of categories; track c.id) {
-                  <option [ngValue]="c.id">
-                    {{ c.name }}
-                  </option>
-                }
-                <option [ngValue]="-1">➕ Thêm thể loại mới...</option>
-              </select>
-              @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
-                <span class="error-text">Thể loại là bắt buộc</span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="authorNames">Tác giả (tùy chọn)</label>
-              <input
-                id="authorNames"
-                type="text"
-                formControlName="authorNames"
-                placeholder="Nhập tên tác giả, cách nhau bởi dấu phẩy (ví dụ: Nguyễn Nhật Ánh, J. K. Rowling)"
+                placeholder="Tìm theo tiêu đề / ISBN / thể loại..."
+                (input)="onSearch($any($event.target).value)"
               />
             </div>
 
-            <button type="submit" class="submit-btn" [disabled]="loading">
-              @if (loading) {
-                Đang xử lý...
-              } @else {
-                Thêm sách
-              }
-            </button>
-          </form>
+            @if (loadingList) {
+              <div class="loading">Đang tải danh sách...</div>
+            } @else if (filteredBooks.length === 0) {
+              <div class="empty-state">Chưa có dữ liệu sách.</div>
+            } @else {
+              <div class="table-wrap">
+                <table class="book-table">
+                  <thead>
+                    <tr>
+                      <th>Tiêu đề</th>
+                      <th>Thể loại</th>
+                      <th>ISBN</th>
+                      <th>Năm</th>
+                      <th>Kho</th>
+                      <th>Tác giả</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (b of filteredBooks; track b.id) {
+                      <tr>
+                        <td>
+                          <div class="title-cell">
+                            <div class="title-text">{{ b.title }}</div>
+                          </div>
+                        </td>
+                        <td>{{ b.category?.name || '-' }}</td>
+                        <td>{{ b.isbn }}</td>
+                        <td>{{ b.publicationYear || '-' }}</td>
+                        <td>
+                          <span class="pill primary">
+                            {{ b.availableCopies ?? 0 }} / {{ b.totalCopies ?? 0 }}
+                          </span>
+                        </td>
+                        <td>{{ formatAuthors(b) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+
+          <div class="form-card sticky-form">
+            <h2>Thêm sách mới</h2>
+
+            @if (errorMessage) {
+              <div class="alert alert-error">{{ errorMessage }}</div>
+            }
+
+            @if (successMessage) {
+              <div class="alert alert-success">{{ successMessage }}</div>
+            }
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-group">
+                <label for="title">Tiêu đề sách *</label>
+                <input
+                  id="title"
+                  type="text"
+                  formControlName="title"
+                  placeholder="Nhập tiêu đề sách"
+                />
+                @if (form.get('title')?.invalid && form.get('title')?.touched) {
+                  <span class="error-text">Tiêu đề sách là bắt buộc</span>
+                }
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="isbn">ISBN *</label>
+                  <input
+                    id="isbn"
+                    type="text"
+                    formControlName="isbn"
+                    placeholder="Ví dụ: 978-0-123456-78-9"
+                  />
+                  @if (form.get('isbn')?.invalid && form.get('isbn')?.touched) {
+                    <span class="error-text">ISBN là bắt buộc</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="publicationYear">Năm xuất bản *</label>
+                  <input
+                    id="publicationYear"
+                    type="number"
+                    formControlName="publicationYear"
+                    placeholder="Ví dụ: 2024"
+                  />
+                  @if (form.get('publicationYear')?.invalid && form.get('publicationYear')?.touched) {
+                    <span class="error-text">Năm xuất bản là bắt buộc và phải >= 0</span>
+                  }
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="quantity">Số lượng *</label>
+                  <input
+                    id="quantity"
+                    type="number"
+                    formControlName="quantity"
+                    placeholder="Ví dụ: 10"
+                  />
+                  @if (form.get('quantity')?.invalid && form.get('quantity')?.touched) {
+                    <span class="error-text">Số lượng là bắt buộc và phải >= 0</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="image">Ảnh bìa *</label>
+                  <input
+                    id="image"
+                    type="text"
+                    formControlName="image"
+                    placeholder="Dán URL ảnh hoặc chọn file bên dưới"
+                  />
+                  <div class="upload-row">
+                    <label class="upload-btn" for="imageUpload">Chọn file từ máy</label>
+                    <input
+                      id="imageUpload"
+                      type="file"
+                      accept="image/*"
+                      (change)="onImageSelected($event)"
+                      hidden
+                    />
+                    @if (imageFileName) {
+                      <span class="file-name">{{ imageFileName }}</span>
+                    }
+                  </div>
+                  @if (form.get('image')?.invalid && form.get('image')?.touched) {
+                    <span class="error-text">Ảnh bìa là bắt buộc</span>
+                  }
+                  @if (imageError) {
+                    <span class="error-text">{{ imageError }}</span>
+                  }
+                  @if (imagePreview) {
+                    <div class="image-preview">
+                      <img [src]="imagePreview" alt="Preview ảnh bìa" />
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="description">Mô tả</label>
+                <textarea
+                  id="description"
+                  formControlName="description"
+                  rows="4"
+                  placeholder="Mô tả ngắn về nội dung sách..."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="categoryId">Thể loại *</label>
+                <select
+                  id="categoryId"
+                  formControlName="categoryId"
+                  (change)="onCategoryChange()"
+                >
+                  <option [ngValue]="null" disabled>-- Chọn thể loại --</option>
+                  @for (c of categories; track c.id) {
+                    <option [ngValue]="c.id">
+                      {{ c.name }}
+                    </option>
+                  }
+                  <option [ngValue]="-1">➕ Thêm thể loại mới...</option>
+                </select>
+                @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
+                  <span class="error-text">Thể loại là bắt buộc</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="authorNames">Tác giả (tùy chọn)</label>
+                <input
+                  id="authorNames"
+                  type="text"
+                  formControlName="authorNames"
+                  placeholder="Nhập tên tác giả, cách nhau bởi dấu phẩy (ví dụ: Nguyễn Nhật Ánh, J. K. Rowling)"
+                />
+              </div>
+
+              <button type="submit" class="submit-btn" [disabled]="loading">
+                @if (loading) {
+                  Đang xử lý...
+                } @else {
+                  Thêm sách
+                }
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </main>

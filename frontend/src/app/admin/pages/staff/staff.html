@@ -13,114 +13,151 @@
       <div class="page-content">
         <h1>Quản lý Nhân viên</h1>
 
-        <div class="form-card">
-          <h2>Thêm nhân viên mới</h2>
+        <div class="content-grid">
+          <div class="card list-card">
+            <div class="list-header">
+              <h2>Danh sách nhân viên</h2>
+              <span class="badge">{{ staffs.length }}</span>
+            </div>
+            @if (staffs.length === 0) {
+              <div class="empty-state">Chưa có nhân viên.</div>
+            } @else {
+              <div class="table-wrap">
+                <table class="simple-table">
+                  <thead>
+                    <tr>
+                      <th>Họ tên</th>
+                      <th>Email</th>
+                      <th>Điện thoại</th>
+                      <th>Username</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (s of staffs; track s.id) {
+                      <tr>
+                        <td>{{ s.firstName }} {{ s.lastName }}</td>
+                        <td>{{ s.email }}</td>
+                        <td>{{ s.phone }}</td>
+                        <td>{{ s.username }}</td>
+                        <td>{{ s.status || '-' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
 
-          @if (errorMessage) {
-            <div class="alert alert-error">{{ errorMessage }}</div>
-          }
+          <div class="form-card sticky-form">
+            <h2>Thêm nhân viên mới</h2>
 
-          @if (successMessage) {
-            <div class="alert alert-success">{{ successMessage }}</div>
-          }
+            @if (errorMessage) {
+              <div class="alert alert-error">{{ errorMessage }}</div>
+            }
 
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="firstName">Họ *</label>
-                <input
-                  id="firstName"
-                  type="text"
-                  formControlName="firstName"
-                  placeholder="Nhập họ"
-                />
-                @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
-                  <span class="error-text">Họ là bắt buộc</span>
-                }
+            @if (successMessage) {
+              <div class="alert alert-success">{{ successMessage }}</div>
+            }
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">Họ *</label>
+                  <input
+                    id="firstName"
+                    type="text"
+                    formControlName="firstName"
+                    placeholder="Nhập họ"
+                  />
+                  @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+                    <span class="error-text">Họ là bắt buộc</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="lastName">Tên *</label>
+                  <input
+                    id="lastName"
+                    type="text"
+                    formControlName="lastName"
+                    placeholder="Nhập tên"
+                  />
+                  @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+                    <span class="error-text">Tên là bắt buộc</span>
+                  }
+                </div>
               </div>
 
               <div class="form-group">
-                <label for="lastName">Tên *</label>
+                <label for="username">Tên đăng nhập *</label>
                 <input
-                  id="lastName"
+                  id="username"
                   type="text"
-                  formControlName="lastName"
-                  placeholder="Nhập tên"
+                  formControlName="username"
+                  placeholder="Nhập tên đăng nhập (tối thiểu 3 ký tự)"
                 />
-                @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
-                  <span class="error-text">Tên là bắt buộc</span>
-                }
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="username">Tên đăng nhập *</label>
-              <input
-                id="username"
-                type="text"
-                formControlName="username"
-                placeholder="Nhập tên đăng nhập (tối thiểu 3 ký tự)"
-              />
-              @if (form.get('username')?.invalid && form.get('username')?.touched) {
-                <span class="error-text">
-                  Tên đăng nhập là bắt buộc và phải có ít nhất 3 ký tự
-                </span>
-              }
-            </div>
-
-            <div class="form-group">
-              <label for="password">Mật khẩu *</label>
-              <input
-                id="password"
-                type="password"
-                formControlName="password"
-                placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
-              />
-              @if (form.get('password')?.invalid && form.get('password')?.touched) {
-                <span class="error-text">
-                  Mật khẩu là bắt buộc và phải có ít nhất 6 ký tự
-                </span>
-              }
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="email">Email *</label>
-                <input
-                  id="email"
-                  type="email"
-                  formControlName="email"
-                  placeholder="example@email.com"
-                />
-                @if (form.get('email')?.invalid && form.get('email')?.touched) {
-                  <span class="error-text">Email không hợp lệ</span>
-                }
-              </div>
-
-              <div class="form-group">
-                <label for="phone">Số điện thoại *</label>
-                <input
-                  id="phone"
-                  type="text"
-                  formControlName="phone"
-                  placeholder="0(3|5|7|8|9)xxxxxxx"
-                />
-                @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
+                @if (form.get('username')?.invalid && form.get('username')?.touched) {
                   <span class="error-text">
-                    Số điện thoại phải là số di động hợp lệ.
+                    Tên đăng nhập là bắt buộc và phải có ít nhất 3 ký tự
                   </span>
                 }
               </div>
-            </div>
 
-            <button type="submit" class="submit-btn" [disabled]="loading">
-              @if (loading) {
-                Đang xử lý...
-              } @else {
-                Thêm nhân viên
-              }
-            </button>
-          </form>
+              <div class="form-group">
+                <label for="password">Mật khẩu *</label>
+                <input
+                  id="password"
+                  type="password"
+                  formControlName="password"
+                  placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+                />
+                @if (form.get('password')?.invalid && form.get('password')?.touched) {
+                  <span class="error-text">
+                    Mật khẩu là bắt buộc và phải có ít nhất 6 ký tự
+                  </span>
+                }
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="email">Email *</label>
+                  <input
+                    id="email"
+                    type="email"
+                    formControlName="email"
+                    placeholder="example@email.com"
+                  />
+                  @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                    <span class="error-text">Email không hợp lệ</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="phone">Số điện thoại *</label>
+                  <input
+                    id="phone"
+                    type="text"
+                    formControlName="phone"
+                    placeholder="0(3|5|7|8|9)xxxxxxx"
+                  />
+                  @if (form.get('phone')?.invalid && form.get('phone')?.touched) {
+                    <span class="error-text">
+                      Số điện thoại phải là số di động hợp lệ.
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <button type="submit" class="submit-btn" [disabled]="loading">
+                @if (loading) {
+                  Đang xử lý...
+                } @else {
+                  Thêm nhân viên
+                }
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </main>

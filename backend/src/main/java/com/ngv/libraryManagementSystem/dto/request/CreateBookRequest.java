@@ -1,4 +1,4 @@
-package com.ngv.libraryManagementSystem.dto.request.admin;
+package com.ngv.libraryManagementSystem.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -27,7 +27,6 @@ public class CreateBookRequest {
     @Min(value = 0, message = "Số lượng không hợp lệ")
     private Integer quantity;
 
-    @Size(max = 1000, message = "Mô tả không được vượt quá 1000 ký tự")
     private String description;
 
     @NotBlank(message = "Ảnh bìa không được để trống")
@@ -36,16 +35,8 @@ public class CreateBookRequest {
     @NotNull(message = "Thể loại không được để trống")
     private Long categoryId;
 
-    /**
-     * Danh sách id tác giả.
-     * Có thể để trống nếu bạn muốn thêm sách trước rồi gán tác giả sau.
-     */
     private Set<Long> authorIds;
 
-    /**
-     * Danh sách tên tác giả.
-     * Nếu tên đã tồn tại trong hệ thống thì sẽ sử dụng lại, nếu chưa có sẽ tạo mới.
-     */
     private Set<String> authorNames;
 }
 

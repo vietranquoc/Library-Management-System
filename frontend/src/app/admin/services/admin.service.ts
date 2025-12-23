@@ -5,6 +5,9 @@ import { ApiResponse } from '../../auth/dto/api-response';
 import { CreateCategoryRequest } from '../dto/create-category-request';
 import { CreateBookRequest } from '../dto/create-book-request';
 import { CreateStaffRequest } from '../dto/create-staff-request';
+import { BookResponse } from '../dto/book-response';
+import { HttpParams } from '@angular/common/http';
+import { StaffResponse } from '../dto/staff-response';
 
 @Injectable({
   providedIn: 'root',
@@ -26,8 +29,8 @@ export class AdminService {
     return this.http.post<ApiResponse<number>>(`${this.baseUrl}/staff`, request);
   }
 
-  getCategories(): Observable<ApiResponse<Array<{ id: number; name: string }>>> {
-    return this.http.get<ApiResponse<Array<{ id: number; name: string }>>>(
+  getCategories(): Observable<ApiResponse<Array<{ id: number; name: string; description?: string }>>> {
+    return this.http.get<ApiResponse<Array<{ id: number; name: string; description?: string }>>>(
       `${this.baseUrl}/categories`,
     );
   }
@@ -35,6 +38,31 @@ export class AdminService {
   getAuthors(): Observable<ApiResponse<Array<{ id: number; name: string }>>> {
     return this.http.get<ApiResponse<Array<{ id: number; name: string }>>>(
       `${this.baseUrl}/authors`,
+    );
+  }
+
+  getStaffs(): Observable<ApiResponse<StaffResponse[]>> {
+    return this.http.get<ApiResponse<StaffResponse[]>>(`${this.baseUrl}/staff`);
+  }
+
+  getBooks(params?: {
+    title?: string;
+    authorName?: string;
+    categoryName?: string;
+    publicationYear?: number;
+  }): Observable<ApiResponse<BookResponse[]>> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          httpParams = httpParams.set(key, String(value));
+        }
+      });
+    }
+    // API public /api/books/search
+    return this.http.get<ApiResponse<BookResponse[]>>(
+      `http://localhost:8080/api/books/search`,
+      { params: httpParams },
     );
   }
 }

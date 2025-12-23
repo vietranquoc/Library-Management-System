@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +49,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
+        String firstErrorMessage = "Dữ liệu không hợp lệ";
+
+        if (!ex.getBindingResult().getAllErrors().isEmpty()) {
+            FieldError first = (FieldError) ex.getBindingResult().getAllErrors().get(0);
+            firstErrorMessage = first.getDefaultMessage();
+        }
+
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
@@ -55,8 +63,27 @@ public class GlobalExceptionHandler {
         });
         ApiResponse<Map<String, String>> response = new ApiResponse<>(
                 HttpStatus.BAD_REQUEST.value(),
-                "Dữ liệu không hợp lệ",
+                firstErrorMessage,
                 errors
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Dữ liệu không hợp lệ";
+        Throwable cause = ex.getMostSpecificCause();
+        if (cause != null && cause.getMessage() != null) {
+            if (cause.getMessage().contains("Data too long") && cause.getMessage().contains("image")) {
+                message = "Ảnh bìa quá lớn. Vui lòng dùng URL hoặc chọn file dung lượng nhỏ hơn.";
+            } else {
+                message = cause.getMessage();
+            }
+        }
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST.value(),
+                message,
+                null
         );
         return ResponseEntity.badRequest().body(response);
     }

@@ -1,11 +1,12 @@
 package com.ngv.libraryManagementSystem.service.admin;
 
-import com.ngv.libraryManagementSystem.dto.request.admin.CreateBookRequest;
-import com.ngv.libraryManagementSystem.dto.request.admin.CreateCategoryRequest;
-import com.ngv.libraryManagementSystem.dto.request.admin.CreateStaffRequest;
+import com.ngv.libraryManagementSystem.dto.request.CreateBookRequest;
+import com.ngv.libraryManagementSystem.dto.request.CreateCategoryRequest;
+import com.ngv.libraryManagementSystem.dto.request.CreateStaffRequest;
 import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
 import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
+import com.ngv.libraryManagementSystem.dto.response.StaffSimpleResponse;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public interface AdminService {
     List<CategorySimpleResponse> getAllCategories();
 
     List<AuthorSimpleResponse> getAllAuthors();
+
+    List<StaffSimpleResponse> getAllStaffs();
 }
 
 

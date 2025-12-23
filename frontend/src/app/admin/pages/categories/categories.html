@@ -13,49 +13,80 @@
       <div class="page-content">
         <h1>Quản lý Thể loại</h1>
 
-        <div class="form-card">
-          <h2>Thêm thể loại mới</h2>
-
-          @if (errorMessage) {
-            <div class="alert alert-error">{{ errorMessage }}</div>
-          }
-
-          @if (successMessage) {
-            <div class="alert alert-success">{{ successMessage }}</div>
-          }
-
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-              <label for="name">Tên thể loại *</label>
-              <input
-                id="name"
-                type="text"
-                formControlName="name"
-                placeholder="Ví dụ: Tiểu thuyết, Khoa học, Lịch sử..."
-              />
-              @if (form.get('name')?.invalid && form.get('name')?.touched) {
-                <span class="error-text">Tên thể loại là bắt buộc</span>
-              }
+        <div class="content-grid">
+          <div class="card list-card">
+            <div class="list-header">
+              <h2>Danh sách thể loại</h2>
+              <span class="badge">{{ categories.length }}</span>
             </div>
+            @if (categories.length === 0) {
+              <div class="empty-state">Chưa có thể loại.</div>
+            } @else {
+              <div class="table-wrap">
+                <table class="simple-table">
+                  <thead>
+                    <tr>
+                      <th>Tên</th>
+                      <th>Mô tả</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (c of categories; track c.id) {
+                      <tr>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.description || '-' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
 
-            <div class="form-group">
-              <label for="description">Mô tả</label>
-              <textarea
-                id="description"
-                formControlName="description"
-                rows="4"
-                placeholder="Mô tả về thể loại này..."
-              ></textarea>
-            </div>
+          <div class="form-card sticky-form">
+            <h2>Thêm thể loại mới</h2>
 
-            <button type="submit" class="submit-btn" [disabled]="loading">
-              @if (loading) {
-                Đang xử lý...
-              } @else {
-                Thêm thể loại
-              }
-            </button>
-          </form>
+            @if (errorMessage) {
+              <div class="alert alert-error">{{ errorMessage }}</div>
+            }
+
+            @if (successMessage) {
+              <div class="alert alert-success">{{ successMessage }}</div>
+            }
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <div class="form-group">
+                <label for="name">Tên thể loại *</label>
+                <input
+                  id="name"
+                  type="text"
+                  formControlName="name"
+                  placeholder="Ví dụ: Tiểu thuyết, Khoa học, Lịch sử..."
+                />
+                @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                  <span class="error-text">Tên thể loại là bắt buộc</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="description">Mô tả</label>
+                <textarea
+                  id="description"
+                  formControlName="description"
+                  rows="4"
+                  placeholder="Mô tả về thể loại này..."
+                ></textarea>
+              </div>
+
+              <button type="submit" class="submit-btn" [disabled]="loading">
+                @if (loading) {
+                  Đang xử lý...
+                } @else {
+                  Thêm thể loại
+                }
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </main>
