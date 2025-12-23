@@ -10,7 +10,9 @@ import java.util.List;
 
 @Repository
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
-    
+
+    boolean existsByIsbn(String isbn);
+
     @Query("SELECT DISTINCT b FROM BookEntity b " +
            "LEFT JOIN b.authors a " +
            "WHERE (:title IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))) " +
