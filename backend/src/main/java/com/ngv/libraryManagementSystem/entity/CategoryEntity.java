@@ -20,6 +20,7 @@ public class CategoryEntity {
 
     private String name;
 
+    @Column(columnDefinition = "text")
     private String description;
 
     @OneToMany(mappedBy = "category")
