@@ -1,0 +1,86 @@
+<div class="admin-wrapper">
+  <header class="admin-header">
+    <div class="logo">📚 Library Management - Admin</div>
+    <div class="header-right">
+      <a routerLink="/admin/dashboard" class="back-link">← Về Dashboard</a>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+          <span>📊</span> Dashboard
+        </a>
+        <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+          <span>📁</span> Quản lý Thể loại
+        </a>
+        <a routerLink="/admin/books" routerLinkActive="active" class="nav-item">
+          <span>📚</span> Quản lý Sách
+        </a>
+        <a routerLink="/admin/staff" routerLinkActive="active" class="nav-item">
+          <span>👥</span> Quản lý Nhân viên
+        </a>
+        <a routerLink="/admin/members" routerLinkActive="active" class="nav-item">
+          <span>👤</span> Quản lý Thành viên
+        </a>
+        <a routerLink="/admin/loans" routerLinkActive="active" class="nav-item">
+          <span>📖</span> Quản lý Mượn trả
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-content">
+        <div class="page-header">
+          <h1>Quản lý Thành viên</h1>
+          <button class="refresh-btn" (click)="loadMembers()" [disabled]="loading">
+            🔄 Làm mới
+          </button>
+        </div>
+
+        @if (errorMessage) {
+          <div class="alert alert-error">{{ errorMessage }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading">Đang tải...</div>
+        } @else if (members.length === 0) {
+          <div class="empty-state">
+            <p>Chưa có thành viên nào trong hệ thống.</p>
+          </div>
+        } @else {
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Họ và tên</th>
+                  <th>Email</th>
+                  <th>Số điện thoại</th>
+                  <th>Ngày tham gia</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (member of members; track member.id) {
+                  <tr>
+                    <td>{{ member.id }}</td>
+                    <td>{{ member.firstName }} {{ member.lastName }}</td>
+                    <td>{{ member.email }}</td>
+                    <td>{{ member.phone }}</td>
+                    <td>{{ member.joinDate | date: 'dd/MM/yyyy' }}</td>
+                    <td>
+                      <span class="status-badge">{{ member.status }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

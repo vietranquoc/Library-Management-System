@@ -1,0 +1,128 @@
+<div class="admin-wrapper">
+  <header class="admin-header">
+    <div class="logo">📚 Library Management - Admin</div>
+    <div class="header-right">
+      <a routerLink="/admin/dashboard" class="back-link">← Về Dashboard</a>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+          <span>📊</span> Dashboard
+        </a>
+        <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+          <span>📁</span> Quản lý Thể loại
+        </a>
+        <a routerLink="/admin/books" routerLinkActive="active" class="nav-item">
+          <span>📚</span> Quản lý Sách
+        </a>
+        <a routerLink="/admin/staff" routerLinkActive="active" class="nav-item">
+          <span>👥</span> Quản lý Nhân viên
+        </a>
+        <a routerLink="/admin/members" routerLinkActive="active" class="nav-item">
+          <span>👤</span> Quản lý Thành viên
+        </a>
+        <a routerLink="/admin/loans" routerLinkActive="active" class="nav-item">
+          <span>📖</span> Quản lý Mượn trả
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-content">
+        <h1>Quản lý Sách</h1>
+
+        <div class="form-card">
+          <h2>Thêm sách mới</h2>
+
+          @if (errorMessage) {
+            <div class="alert alert-error">{{ errorMessage }}</div>
+          }
+
+          @if (successMessage) {
+            <div class="alert alert-success">{{ successMessage }}</div>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label for="title">Tiêu đề sách *</label>
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                placeholder="Nhập tiêu đề sách"
+              />
+              @if (form.get('title')?.invalid && form.get('title')?.touched) {
+                <span class="error-text">Tiêu đề sách là bắt buộc</span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="isbn">ISBN *</label>
+                <input
+                  id="isbn"
+                  type="text"
+                  formControlName="isbn"
+                  placeholder="Ví dụ: 978-0-123456-78-9"
+                />
+                @if (form.get('isbn')?.invalid && form.get('isbn')?.touched) {
+                  <span class="error-text">ISBN là bắt buộc</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="publicationYear">Năm xuất bản *</label>
+                <input
+                  id="publicationYear"
+                  type="number"
+                  formControlName="publicationYear"
+                  placeholder="Ví dụ: 2024"
+                />
+                @if (form.get('publicationYear')?.invalid && form.get('publicationYear')?.touched) {
+                  <span class="error-text">Năm xuất bản là bắt buộc và phải >= 0</span>
+                }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="categoryId">ID Thể loại *</label>
+              <input
+                id="categoryId"
+                type="number"
+                formControlName="categoryId"
+                placeholder="Nhập ID thể loại (số)"
+              />
+              @if (form.get('categoryId')?.invalid && form.get('categoryId')?.touched) {
+                <span class="error-text">ID thể loại là bắt buộc</span>
+              }
+              <small class="help-text">Bạn cần tạo thể loại trước và lấy ID từ đó</small>
+            </div>
+
+            <div class="form-group">
+              <label for="authorIds">ID Tác giả (tùy chọn)</label>
+              <input
+                id="authorIds"
+                type="text"
+                formControlName="authorIds"
+                placeholder="Nhập ID tác giả, cách nhau bởi dấu phẩy (ví dụ: 1, 2, 3)"
+              />
+              <small class="help-text">Có thể để trống và thêm tác giả sau</small>
+            </div>
+
+            <button type="submit" class="submit-btn" [disabled]="loading">
+              @if (loading) {
+                Đang xử lý...
+              } @else {
+                Thêm sách
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+

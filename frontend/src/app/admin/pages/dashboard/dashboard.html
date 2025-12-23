@@ -1,0 +1,89 @@
+<div class="admin-wrapper">
+  <header class="admin-header">
+    <div class="logo">📚 Library Management - Admin</div>
+    <div class="header-right">
+      <span class="username">Xin chào, {{ getUsername() }}</span>
+      <button class="logout-btn" (click)="onLogout()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+          <span>📊</span> Dashboard
+        </a>
+        <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+          <span>📁</span> Quản lý Thể loại
+        </a>
+        <a routerLink="/admin/books" routerLinkActive="active" class="nav-item">
+          <span>📚</span> Quản lý Sách
+        </a>
+        <a routerLink="/admin/staff" routerLinkActive="active" class="nav-item">
+          <span>👥</span> Quản lý Nhân viên
+        </a>
+        <a routerLink="/admin/members" routerLinkActive="active" class="nav-item">
+          <span>👤</span> Quản lý Thành viên
+        </a>
+        <a routerLink="/admin/loans" routerLinkActive="active" class="nav-item">
+          <span>📖</span> Quản lý Mượn trả
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="dashboard-content">
+        <h1>Dashboard Quản trị</h1>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+              <h3>Tổng số sách</h3>
+              <p class="stat-value">-</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👤</div>
+            <div class="stat-info">
+              <h3>Tổng thành viên</h3>
+              <p class="stat-value">-</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-info">
+              <h3>Đang mượn</h3>
+              <p class="stat-value">-</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-info">
+              <h3>Quá hạn</h3>
+              <p class="stat-value">-</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h2>Thao tác nhanh</h2>
+          <div class="actions-grid">
+            <a routerLink="/admin/categories" class="action-card">
+              <span class="action-icon">➕</span>
+              <h3>Thêm thể loại mới</h3>
+            </a>
+            <a routerLink="/admin/books" class="action-card">
+              <span class="action-icon">➕</span>
+              <h3>Thêm sách mới</h3>
+            </a>
+            <a routerLink="/admin/staff" class="action-card">
+              <span class="action-icon">➕</span>
+              <h3>Thêm nhân viên</h3>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+

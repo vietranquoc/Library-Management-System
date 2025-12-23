@@ -1,0 +1,142 @@
+<div class="admin-wrapper">
+  <header class="admin-header">
+    <div class="logo">📚 Library Management - Admin</div>
+    <div class="header-right">
+      <a routerLink="/admin/dashboard" class="back-link">← Về Dashboard</a>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+          <span>📊</span> Dashboard
+        </a>
+        <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+          <span>📁</span> Quản lý Thể loại
+        </a>
+        <a routerLink="/admin/books" routerLinkActive="active" class="nav-item">
+          <span>📚</span> Quản lý Sách
+        </a>
+        <a routerLink="/admin/staff" routerLinkActive="active" class="nav-item">
+          <span>👥</span> Quản lý Nhân viên
+        </a>
+        <a routerLink="/admin/members" routerLinkActive="active" class="nav-item">
+          <span>👤</span> Quản lý Thành viên
+        </a>
+        <a routerLink="/admin/loans" routerLinkActive="active" class="nav-item">
+          <span>📖</span> Quản lý Mượn trả
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-content">
+        <h1>Quản lý Mượn trả</h1>
+
+        <div class="search-card">
+          <h2>Tìm kiếm lịch sử mượn trả</h2>
+
+          <form [formGroup]="searchForm" class="search-form">
+            <div class="form-group">
+              <label>Tìm theo</label>
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    formControlName="searchType"
+                    value="book"
+                  />
+                  Theo sách (Book ID)
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    formControlName="searchType"
+                    value="member"
+                  />
+                  Theo thành viên (Member ID)
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="searchId">ID</label>
+              <input
+                id="searchId"
+                type="number"
+                formControlName="searchId"
+                placeholder="Nhập ID"
+              />
+            </div>
+
+            <button
+              type="button"
+              class="search-btn"
+              (click)="onSearch()"
+              [disabled]="loading"
+            >
+              @if (loading) {
+                Đang tìm...
+              } @else {
+                🔍 Tìm kiếm
+              }
+            </button>
+          </form>
+        </div>
+
+        @if (errorMessage) {
+          <div class="alert alert-error">{{ errorMessage }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading">Đang tải...</div>
+        } @else if (loans.length > 0) {
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sách</th>
+                  <th>Thành viên</th>
+                  <th>Ngày mượn</th>
+                  <th>Hạn trả</th>
+                  <th>Ngày trả</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (loan of loans; track loan.id) {
+                  <tr>
+                    <td>{{ loan.id }}</td>
+                    <td>
+                      <div class="book-info">
+                        <strong>{{ loan.book.title }}</strong>
+                        <small>ISBN: {{ loan.book.isbn }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="member-info">
+                        <strong>{{ loan.member.firstName }} {{ loan.member.lastName }}</strong>
+                        <small>{{ loan.member.email }}</small>
+                      </div>
+                    </td>
+                    <td>{{ loan.borrowDate | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ loan.dueDate | date: 'dd/MM/yyyy' }}</td>
+                    <td>
+                      {{ loan.returnDate ? (loan.returnDate | date: 'dd/MM/yyyy') : '-' }}
+                    </td>
+                    <td>
+                      <span class="status-badge">{{ loan.status }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

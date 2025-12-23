@@ -1,0 +1,85 @@
+<div class="admin-wrapper">
+  <header class="admin-header">
+    <div class="logo">📚 Library Management - Admin</div>
+    <div class="header-right">
+      <a routerLink="/admin/dashboard" class="back-link">← Về Dashboard</a>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <nav class="sidebar-nav">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+          <span>📊</span> Dashboard
+        </a>
+        <a routerLink="/admin/categories" routerLinkActive="active" class="nav-item">
+          <span>📁</span> Quản lý Thể loại
+        </a>
+        <a routerLink="/admin/books" routerLinkActive="active" class="nav-item">
+          <span>📚</span> Quản lý Sách
+        </a>
+        <a routerLink="/admin/staff" routerLinkActive="active" class="nav-item">
+          <span>👥</span> Quản lý Nhân viên
+        </a>
+        <a routerLink="/admin/members" routerLinkActive="active" class="nav-item">
+          <span>👤</span> Quản lý Thành viên
+        </a>
+        <a routerLink="/admin/loans" routerLinkActive="active" class="nav-item">
+          <span>📖</span> Quản lý Mượn trả
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-content">
+        <h1>Quản lý Thể loại</h1>
+
+        <div class="form-card">
+          <h2>Thêm thể loại mới</h2>
+
+          @if (errorMessage) {
+            <div class="alert alert-error">{{ errorMessage }}</div>
+          }
+
+          @if (successMessage) {
+            <div class="alert alert-success">{{ successMessage }}</div>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+              <label for="name">Tên thể loại *</label>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                placeholder="Ví dụ: Tiểu thuyết, Khoa học, Lịch sử..."
+              />
+              @if (form.get('name')?.invalid && form.get('name')?.touched) {
+                <span class="error-text">Tên thể loại là bắt buộc</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="description">Mô tả</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="4"
+                placeholder="Mô tả về thể loại này..."
+              ></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" [disabled]="loading">
+              @if (loading) {
+                Đang xử lý...
+              } @else {
+                Thêm thể loại
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
