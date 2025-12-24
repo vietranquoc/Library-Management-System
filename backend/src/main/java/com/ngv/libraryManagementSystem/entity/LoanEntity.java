@@ -1,5 +1,6 @@
 package com.ngv.libraryManagementSystem.entity;
 
+import com.ngv.libraryManagementSystem.enums.LoanStatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +10,10 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "loans")
 public class LoanEntity {
 
@@ -18,12 +21,15 @@ public class LoanEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private LocalDate loanDate;
 
     private LocalDate dueDate;
 
     private LocalDate returnedDate;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private LoanStatusEnum status = LoanStatusEnum.REQUESTED;
 
     @ManyToOne
     @JoinColumn(name = "member_id")

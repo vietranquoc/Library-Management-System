@@ -5,7 +5,7 @@ import { ApiResponse } from '../../auth/dto/api-response';
 import { BookResponse } from '../../admin/dto/book-response';
 
 export interface LoanRequest {
-  bookCopyId: number;
+  bookId: number;
 }
 
 export interface ReservationRequest {

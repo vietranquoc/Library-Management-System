@@ -5,9 +5,10 @@ import { ApiResponse } from '../../auth/dto/api-response';
 
 export interface LoanResponse {
   id: number;
-  loanDate: string; // Backend trả về loanDate
+  loanDate?: string; // null khi REQUESTED
   returnedDate?: string; // Backend trả về returnedDate
-  dueDate: string;
+  dueDate?: string; // null khi REQUESTED
+  status?: string; // REQUESTED, BORROWED, RETURNED, OVERDUE, CANCELLED
   book: {
     id: number;
     title: string;
@@ -19,6 +20,7 @@ export interface LoanResponse {
     lastName: string;
     email: string;
   };
+  bookCopyBarCode?: string;
 }
 
 @Injectable({

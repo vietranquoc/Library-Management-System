@@ -100,10 +100,10 @@
                         <small>{{ loan.member.email }}</small>
                       </div>
                     </td>
-                    <td>{{ loan.borrowDate | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ loan.loanDate ? (loan.loanDate | date: 'dd/MM/yyyy') : '-' }}</td>
                     <td>{{ loan.dueDate | date: 'dd/MM/yyyy' }}</td>
                     <td>
-                      {{ loan.returnDate ? (loan.returnDate | date: 'dd/MM/yyyy') : '-' }}
+                      {{ loan.returnedDate ? (loan.returnedDate | date: 'dd/MM/yyyy') : '-' }}
                     </td>
                     <td>
                       <span class="status-badge">{{ loan.status }}</span>

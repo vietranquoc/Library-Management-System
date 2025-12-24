@@ -139,7 +139,7 @@ export class SearchBooks implements OnInit {
     this.successMessage = '';
 
     const request: LoanRequest = {
-      bookCopyId: book.id, // Trong code backend, bookCopyId được dùng như bookId
+      bookId: book.id,
     };
 
     this.bookService.borrowBook(request).subscribe({

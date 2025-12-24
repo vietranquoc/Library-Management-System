@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoanRequest {
-    @NotNull(message = "Book copy ID is required")
-    private Long bookCopyId;
+    @NotNull(message = "Book ID is required")
+    private Long bookId;
 }
 

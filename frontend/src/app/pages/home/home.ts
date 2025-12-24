@@ -75,16 +75,21 @@ export class Home implements OnInit, OnDestroy {
   }
 
   getActiveLoans(): LoanResponse[] {
-    // Loan đang mượn là loan chưa có returnedDate
-    return this.loans.filter(loan => !loan.returnedDate);
+    // Loan đang hoạt động: REQUESTED, BORROWED, OVERDUE (chưa trả)
+    return this.loans.filter(loan => {
+      const status = loan.status?.toUpperCase();
+      return status === 'REQUESTED' || status === 'BORROWED' || status === 'OVERDUE';
+    });
   }
 
   getOverdueLoans(): LoanResponse[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return this.loans.filter(loan => {
-      // Chỉ tính loan chưa trả
-      if (loan.returnedDate) return false;
+      // Chỉ tính loan có status BORROWED hoặc OVERDUE và có dueDate
+      const status = loan.status?.toUpperCase();
+      if (status !== 'BORROWED' && status !== 'OVERDUE') return false;
+      if (!loan.dueDate) return false;
       const dueDate = new Date(loan.dueDate);
       dueDate.setHours(0, 0, 0, 0);
       return dueDate < today;
@@ -92,42 +97,113 @@ export class Home implements OnInit, OnDestroy {
   }
 
   getReturnedLoans(): LoanResponse[] {
-    // Loan đã trả là loan có returnedDate
-    return this.loans.filter(loan => !!loan.returnedDate);
+    // Loan đã trả là loan có status RETURNED
+    return this.loans.filter(loan => {
+      const status = loan.status?.toUpperCase();
+      return status === 'RETURNED';
+    });
   }
 
-  formatDate(dateString: string): string {
+  getRequestedLoans(): LoanResponse[] {
+    // Loan đang chờ lấy sách
+    return this.loans.filter(loan => {
+      const status = loan.status?.toUpperCase();
+      return status === 'REQUESTED';
+    });
+  }
+
+  formatDate(dateString: string | undefined): string {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN');
   }
 
   getStatusLabel(loan: LoanResponse): string {
-    if (loan.returnedDate) {
-      return 'Đã trả';
+    const status = loan.status?.toUpperCase();
+    
+    switch (status) {
+      case 'REQUESTED':
+        return 'Đang chờ lấy sách';
+      case 'APPROVED':
+        return 'Đã duyệt';
+      case 'BORROWED':
+        // Kiểm tra quá hạn
+        if (loan.dueDate) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dueDate = new Date(loan.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+          if (dueDate < today) {
+            return 'Quá hạn';
+          }
+        }
+        return 'Đang mượn';
+      case 'OVERDUE':
+        return 'Quá hạn';
+      case 'RETURNED':
+        return 'Đã trả';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        // Fallback cho dữ liệu cũ không có status
+        if (loan.returnedDate) {
+          return 'Đã trả';
+        }
+        if (loan.dueDate) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dueDate = new Date(loan.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+          if (dueDate < today) {
+            return 'Quá hạn';
+          }
+        }
+        return 'Đang mượn';
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(loan.dueDate);
-    dueDate.setHours(0, 0, 0, 0);
-    if (dueDate < today) {
-      return 'Quá hạn';
-    }
-    return 'Đang mượn';
   }
 
   getStatusClass(loan: LoanResponse): string {
-    if (loan.returnedDate) {
-      return 'status-returned';
+    const status = loan.status?.toUpperCase();
+    
+    switch (status) {
+      case 'REQUESTED':
+        return 'status-requested';
+      case 'APPROVED':
+        return 'status-approved';
+      case 'BORROWED':
+        // Kiểm tra quá hạn
+        if (loan.dueDate) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dueDate = new Date(loan.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+          if (dueDate < today) {
+            return 'status-overdue';
+          }
+        }
+        return 'status-active';
+      case 'OVERDUE':
+        return 'status-overdue';
+      case 'RETURNED':
+        return 'status-returned';
+      case 'CANCELLED':
+        return 'status-cancelled';
+      default:
+        // Fallback cho dữ liệu cũ
+        if (loan.returnedDate) {
+          return 'status-returned';
+        }
+        if (loan.dueDate) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dueDate = new Date(loan.dueDate);
+          dueDate.setHours(0, 0, 0, 0);
+          if (dueDate < today) {
+            return 'status-overdue';
+          }
+        }
+        return 'status-active';
     }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(loan.dueDate);
-    dueDate.setHours(0, 0, 0, 0);
-    if (dueDate < today) {
-      return 'status-overdue';
-    }
-    return 'status-active';
   }
 
   onLogout(): void {

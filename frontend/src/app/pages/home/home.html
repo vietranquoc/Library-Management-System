@@ -115,16 +115,26 @@
                     <span class="detail-label">ISBN:</span>
                     <span class="detail-value">{{ loan.book.isbn }}</span>
                   </div>
-                  <div class="loan-detail-item">
-                    <span class="detail-label">Ngày mượn:</span>
-                    <span class="detail-value">{{ formatDate(loan.loanDate) }}</span>
-                  </div>
-                  <div class="loan-detail-item">
-                    <span class="detail-label">Hạn trả:</span>
-                    <span class="detail-value" [class.overdue-date]="getOverdueLoans().includes(loan)">
-                      {{ formatDate(loan.dueDate) }}
-                    </span>
-                  </div>
+                  @if (loan.loanDate) {
+                    <div class="loan-detail-item">
+                      <span class="detail-label">Ngày mượn:</span>
+                      <span class="detail-value">{{ formatDate(loan.loanDate) }}</span>
+                    </div>
+                  }
+                  @if (loan.dueDate) {
+                    <div class="loan-detail-item">
+                      <span class="detail-label">Hạn trả:</span>
+                      <span class="detail-value" [class.overdue-date]="getOverdueLoans().includes(loan)">
+                        {{ formatDate(loan.dueDate) }}
+                      </span>
+                    </div>
+                  }
+                  @if (loan.status?.toUpperCase() === 'REQUESTED') {
+                    <div class="loan-detail-item">
+                      <span class="detail-label">Ghi chú:</span>
+                      <span class="detail-value">Vui lòng đến thư viện để lấy sách</span>
+                    </div>
+                  }
                 </div>
                 @if (getOverdueLoans().includes(loan)) {
                   <div class="overdue-warning">

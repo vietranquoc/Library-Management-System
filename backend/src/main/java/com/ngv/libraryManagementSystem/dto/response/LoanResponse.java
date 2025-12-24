@@ -16,6 +16,7 @@ public class LoanResponse {
     private LocalDate loanDate;
     private LocalDate dueDate;
     private LocalDate returnedDate;
+    private String status;
     private BookInfo book;
     private MemberInfo member;
     private String bookCopyBarCode;
