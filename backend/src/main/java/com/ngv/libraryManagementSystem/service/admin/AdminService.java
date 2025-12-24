@@ -6,6 +6,7 @@ import com.ngv.libraryManagementSystem.dto.request.CreateStaffRequest;
 import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
 import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
+import com.ngv.libraryManagementSystem.dto.response.DashboardStatisticsResponse;
 import com.ngv.libraryManagementSystem.dto.response.StaffSimpleResponse;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public interface AdminService {
     List<AuthorSimpleResponse> getAllAuthors();
 
     List<StaffSimpleResponse> getAllStaffs();
+
+    DashboardStatisticsResponse getDashboardStatistics();
 }
 
 

@@ -128,6 +128,14 @@ public class LoanServiceImpl implements LoanService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<LoanResponse> getAllLoans() {
+        return loanRepository.findAllOrderByIdDesc().stream()
+                .map(this::mapToLoanResponse)
+                .collect(Collectors.toList());
+    }
+
     private LoanResponse mapToLoanResponse(LoanEntity loan) {
         return LoanResponse.builder()
                 .id(loan.getId())

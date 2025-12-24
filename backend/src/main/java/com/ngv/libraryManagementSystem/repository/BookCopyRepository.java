@@ -25,5 +25,11 @@ public interface BookCopyRepository extends JpaRepository<BookCopyEntity, Long> 
     Optional<BookCopyEntity> findByBarCode(String barCode);
 
     long countByBookIdAndStatus(Long bookId, BookCopyStatusEnum status);
+
+    @Query("SELECT COUNT(bc) FROM BookCopyEntity bc WHERE bc.status = :status")
+    long countByStatus(@Param("status") BookCopyStatusEnum status);
+
+    @Query("SELECT bc FROM BookCopyEntity bc WHERE bc.status = :status")
+    List<BookCopyEntity> findByStatus(@Param("status") BookCopyStatusEnum status);
 }
 

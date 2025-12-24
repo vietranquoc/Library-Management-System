@@ -3,11 +3,7 @@ package com.ngv.libraryManagementSystem.controller;
 import com.ngv.libraryManagementSystem.dto.request.CreateBookRequest;
 import com.ngv.libraryManagementSystem.dto.request.CreateCategoryRequest;
 import com.ngv.libraryManagementSystem.dto.request.CreateStaffRequest;
-import com.ngv.libraryManagementSystem.dto.response.ApiResponse;
-import com.ngv.libraryManagementSystem.dto.response.BookResponse;
-import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
-import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
-import com.ngv.libraryManagementSystem.dto.response.StaffSimpleResponse;
+import com.ngv.libraryManagementSystem.dto.response.*;
 import com.ngv.libraryManagementSystem.service.admin.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +73,13 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<StaffSimpleResponse>>> getAllStaff() {
         List<StaffSimpleResponse> staffs = adminService.getAllStaffs();
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách nhân viên thành công", staffs));
+    }
+
+    @GetMapping("/dashboard/statistics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<ApiResponse<DashboardStatisticsResponse>> getDashboardStatistics() {
+        DashboardStatisticsResponse statistics = adminService.getDashboardStatistics();
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thống kê dashboard thành công", statistics));
     }
 }
 

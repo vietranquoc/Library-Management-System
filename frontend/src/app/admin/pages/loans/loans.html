@@ -11,57 +11,14 @@
 
     <main class="admin-main">
       <div class="page-content">
-        <h1>Quản lý Mượn trả</h1>
-
-        <div class="search-card">
-          <h2>Tìm kiếm lịch sử mượn trả</h2>
-
-          <form [formGroup]="searchForm" class="search-form">
-            <div class="form-group">
-              <label>Tìm theo</label>
-              <div class="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    formControlName="searchType"
-                    value="book"
-                  />
-                  Theo sách (Book ID)
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    formControlName="searchType"
-                    value="member"
-                  />
-                  Theo thành viên (Member ID)
-                </label>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="searchId">ID</label>
-              <input
-                id="searchId"
-                type="number"
-                formControlName="searchId"
-                placeholder="Nhập ID"
-              />
-            </div>
-
-            <button
-              type="button"
-              class="search-btn"
-              (click)="onSearch()"
-              [disabled]="loading"
-            >
-              @if (loading) {
-                Đang tìm...
-              } @else {
-                🔍 Tìm kiếm
-              }
-            </button>
-          </form>
+        <div class="page-header">
+          <div>
+            <h1>Quản lý Mượn trả</h1>
+            <p class="page-subtitle">Danh sách tất cả phiếu mượn trong hệ thống</p>
+          </div>
+          <button class="refresh-btn" (click)="loadAllLoans()" [disabled]="loading">
+            🔄 Làm mới
+          </button>
         </div>
 
         @if (errorMessage) {
@@ -112,6 +69,10 @@
                 }
               </tbody>
             </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Chưa có phiếu mượn nào trong hệ thống.</p>
           </div>
         }
       </div>

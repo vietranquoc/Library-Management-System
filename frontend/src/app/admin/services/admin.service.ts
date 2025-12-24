@@ -65,5 +65,11 @@ export class AdminService {
       { params: httpParams },
     );
   }
+
+  getDashboardStatistics(): Observable<ApiResponse<import('../dto/dashboard-statistics').DashboardStatistics>> {
+    return this.http.get<ApiResponse<import('../dto/dashboard-statistics').DashboardStatistics>>(
+      `${this.baseUrl}/dashboard/statistics`
+    );
+  }
 }
 

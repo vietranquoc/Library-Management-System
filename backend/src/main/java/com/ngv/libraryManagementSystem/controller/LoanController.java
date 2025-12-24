@@ -59,5 +59,12 @@ public class LoanController {
         List<LoanResponse> loans = loanService.getMemberLoans(memberId);
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách mượn sách thành công", loans));
     }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<LoanResponse>>> getAllLoans() {
+        List<LoanResponse> loans = loanService.getAllLoans();
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách mượn sách thành công", loans));
+    }
 }
 

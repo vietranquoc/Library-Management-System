@@ -11,5 +11,6 @@ public interface LoanService {
     List<LoanResponse> getMyLoans(Long memberId);
     List<LoanResponse> getLoansByBookId(Long bookId);
     List<LoanResponse> getMemberLoans(Long memberId);
+    List<LoanResponse> getAllLoans();
 }
 

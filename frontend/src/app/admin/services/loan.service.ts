@@ -31,6 +31,10 @@ export class LoanService {
 
   constructor(private http: HttpClient) {}
 
+  getAllLoans(): Observable<ApiResponse<LoanResponse[]>> {
+    return this.http.get<ApiResponse<LoanResponse[]>>(this.baseUrl);
+  }
+
   getLoansByBookId(bookId: number): Observable<ApiResponse<LoanResponse[]>> {
     return this.http.get<ApiResponse<LoanResponse[]>>(
       `${this.baseUrl}/book/${bookId}`

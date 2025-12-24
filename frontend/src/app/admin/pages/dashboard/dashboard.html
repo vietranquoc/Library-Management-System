@@ -13,56 +13,105 @@
     <main class="admin-main">
       <div class="dashboard-content">
         <h1>Dashboard Quản trị</h1>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">📚</div>
-            <div class="stat-info">
-              <h3>Tổng số sách</h3>
-              <p class="stat-value">-</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">👤</div>
-            <div class="stat-info">
-              <h3>Tổng thành viên</h3>
-              <p class="stat-value">-</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">📖</div>
-            <div class="stat-info">
-              <h3>Đang mượn</h3>
-              <p class="stat-value">-</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-info">
-              <h3>Quá hạn</h3>
-              <p class="stat-value">-</p>
-            </div>
-          </div>
-        </div>
 
-        <div class="quick-actions">
-          <h2>Thao tác nhanh</h2>
-          <div class="actions-grid">
-            <a routerLink="/admin/categories" class="action-card">
-              <span class="action-icon">➕</span>
-              <h3>Thêm thể loại mới</h3>
-            </a>
-            <a routerLink="/admin/books" class="action-card">
-              <span class="action-icon">➕</span>
-              <h3>Thêm sách mới</h3>
-            </a>
-            <a routerLink="/admin/staff" class="action-card">
-              <span class="action-icon">➕</span>
-              <h3>Thêm nhân viên</h3>
-            </a>
+        @if (loading) {
+          <div class="loading-state">
+            <p>Đang tải dữ liệu...</p>
           </div>
-        </div>
+        } @else if (errorMessage) {
+          <div class="error-state">
+            <p>{{ errorMessage }}</p>
+            <button class="retry-btn" (click)="loadStatistics()">Thử lại</button>
+          </div>
+        } @else if (statistics) {
+          <!-- Statistics Cards -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📚</div>
+              <div class="stat-info">
+                <h3>Tổng số sách</h3>
+                <p class="stat-value">{{ statistics.totalBooks }}</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">👤</div>
+              <div class="stat-info">
+                <h3>Thành viên đang hoạt động</h3>
+                <p class="stat-value">{{ statistics.activeMembers }}</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📖</div>
+              <div class="stat-info">
+                <h3>Sách đang mượn</h3>
+                <p class="stat-value">{{ statistics.totalBorrowedBooks }}</p>
+              </div>
+            </div>
+            <div class="stat-card stat-warning">
+              <div class="stat-icon">⚠️</div>
+              <div class="stat-info">
+                <h3>Sách quá hạn</h3>
+                <p class="stat-value">{{ statistics.overdueBooks }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="charts-section">
+            <div class="chart-container">
+              <div class="chart-card">
+                <canvas id="loanTrendChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="chart-card">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activities -->
+          <div class="activities-section">
+            <h2>Hoạt động gần đây</h2>
+            <div class="activities-list">
+              @if (statistics.recentActivities.length === 0) {
+                <div class="empty-state">
+                  <p>Chưa có hoạt động nào</p>
+                </div>
+              } @else {
+                @for (activity of statistics.recentActivities; track activity.timestamp) {
+                  <div class="activity-item">
+                    <div class="activity-icon">{{ getActivityIcon(activity.type) }}</div>
+                    <div class="activity-content">
+                      <p class="activity-description">{{ activity.description }}</p>
+                      <span class="activity-time">{{ formatActivityTime(activity.timestamp) }}</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <h2>Thao tác nhanh</h2>
+            <div class="actions-grid">
+              <a routerLink="/admin/categories" class="action-card">
+                <span class="action-icon">➕</span>
+                <h3>Thêm thể loại mới</h3>
+              </a>
+              <a routerLink="/admin/books" class="action-card">
+                <span class="action-icon">➕</span>
+                <h3>Thêm sách mới</h3>
+              </a>
+              <a routerLink="/admin/staff" class="action-card">
+                <span class="action-icon">➕</span>
+                <h3>Thêm nhân viên</h3>
+              </a>
+            </div>
+          </div>
+        }
       </div>
     </main>
   </div>
 </div>
-

@@ -3,10 +3,8 @@ package com.ngv.libraryManagementSystem.service.admin;
 import com.ngv.libraryManagementSystem.dto.request.CreateBookRequest;
 import com.ngv.libraryManagementSystem.dto.request.CreateCategoryRequest;
 import com.ngv.libraryManagementSystem.dto.request.CreateStaffRequest;
-import com.ngv.libraryManagementSystem.dto.response.AuthorSimpleResponse;
-import com.ngv.libraryManagementSystem.dto.response.BookResponse;
-import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
-import com.ngv.libraryManagementSystem.dto.response.StaffSimpleResponse;
+import com.ngv.libraryManagementSystem.dto.response.*;
+import com.ngv.libraryManagementSystem.enums.LoanStatusEnum;
 import com.ngv.libraryManagementSystem.entity.*;
 import com.ngv.libraryManagementSystem.enums.BookCopyStatusEnum;
 import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
@@ -19,8 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -196,6 +198,134 @@ public class AdminServiceImpl implements AdminService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DashboardStatisticsResponse getDashboardStatistics() {
+        // 1. Tổng số BookCopy đang AVAILABLE
+        long totalBooks = bookCopyRepository.countByStatus(BookCopyStatusEnum.AVAILABLE);
+
+        // 2. Tổng số member đang hoạt động
+        long activeMembers = memberRepository.countByStatus(MemberStatusEnum.ACTIVE);
+
+        // 3. Tổng số sách đã được mượn (status BORROWED hoặc OVERDUE)
+        long totalBorrowedBooks = loanRepository.countByStatusIn(List.of(LoanStatusEnum.BORROWED, LoanStatusEnum.OVERDUE));
+
+        // 4. Tổng số sách quá hạn
+        long overdueBooks = loanRepository.countOverdueBooks(LoanStatusEnum.OVERDUE);
+
+        // 5. Dữ liệu mượn sách theo tháng (12 tháng gần nhất)
+        List<MonthlyLoanData> monthlyLoanData = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        for (int i = 11; i >= 0; i--) {
+            LocalDate monthDate = now.minusMonths(i);
+            int year = monthDate.getYear();
+            int month = monthDate.getMonthValue();
+            
+            long borrowedCount = loanRepository.countBorrowedInMonth(LoanStatusEnum.BORROWED, year, month);
+            long returnedCount = loanRepository.countReturnedInMonth(LoanStatusEnum.RETURNED, year, month);
+            
+            String monthLabel = String.format("Tháng %02d/%d", month, year);
+            
+            monthlyLoanData.add(MonthlyLoanData.builder()
+                    .month(monthLabel)
+                    .borrowedCount(borrowedCount)
+                    .returnedCount(returnedCount)
+                    .build());
+        }
+
+        // 6. Phân bổ sách theo thể loại (đếm BookCopy AVAILABLE)
+        List<CategoryDistribution> categoryDistribution = new ArrayList<>();
+        List<BookCopyEntity> availableCopies = bookCopyRepository.findByStatus(BookCopyStatusEnum.AVAILABLE);
+        Map<String, Long> categoryCountMap = new HashMap<>();
+        
+        for (BookCopyEntity copy : availableCopies) {
+            if (copy.getBook() != null && copy.getBook().getCategory() != null) {
+                String categoryName = copy.getBook().getCategory().getName();
+                categoryCountMap.put(categoryName, categoryCountMap.getOrDefault(categoryName, 0L) + 1);
+            } else {
+                String categoryName = "Không phân loại";
+                categoryCountMap.put(categoryName, categoryCountMap.getOrDefault(categoryName, 0L) + 1);
+            }
+        }
+        
+        for (Map.Entry<String, Long> entry : categoryCountMap.entrySet()) {
+            categoryDistribution.add(CategoryDistribution.builder()
+                    .categoryName(entry.getKey())
+                    .bookCount(entry.getValue())
+                    .build());
+        }
+
+        // 7. Hoạt động mới nhất (20 hoạt động gần nhất)
+        List<ActivityLog> recentActivities = new ArrayList<>();
+        List<LoanEntity> recentLoans = loanRepository.findAllOrderByIdDesc().stream()
+                .limit(20)
+                .collect(Collectors.toList());
+
+        for (LoanEntity loan : recentLoans) {
+            String type;
+            String description;
+            String memberName = loan.getMember() != null 
+                    ? loan.getMember().getFirstName() + " " + loan.getMember().getLastName()
+                    : null;
+            String bookTitle = loan.getBook() != null ? loan.getBook().getTitle() : "Unknown";
+
+            LoanStatusEnum status = loan.getStatus();
+            if (status == null) {
+                continue;
+            }
+
+            switch (status) {
+                case REQUESTED:
+                    type = "LOAN_REQUEST";
+                    description = memberName + " đã yêu cầu mượn sách \"" + bookTitle + "\"";
+                    break;
+                case BORROWED:
+                    type = "LOAN_BORROWED";
+                    description = memberName + " đã mượn sách \"" + bookTitle + "\"";
+                    break;
+                case RETURNED:
+                    type = "LOAN_RETURNED";
+                    description = memberName + " đã trả sách \"" + bookTitle + "\"";
+                    break;
+                case OVERDUE:
+                    type = "LOAN_OVERDUE";
+                    description = "Sách \"" + bookTitle + "\" của " + memberName + " đã quá hạn";
+                    break;
+                default:
+                    continue;
+            }
+
+            // Tạo timestamp từ loanDate hoặc returnedDate
+            LocalDateTime timestamp;
+            if (loan.getReturnedDate() != null) {
+                timestamp = loan.getReturnedDate().atStartOfDay();
+            } else if (loan.getLoanDate() != null) {
+                timestamp = loan.getLoanDate().atStartOfDay();
+            } else {
+                // Nếu không có date, dùng ngày hiện tại (cho REQUESTED)
+                timestamp = LocalDateTime.now();
+            }
+
+            recentActivities.add(ActivityLog.builder()
+                    .type(type)
+                    .description(description)
+                    .memberName(memberName)
+                    .bookTitle(bookTitle)
+                    .timestamp(timestamp)
+                    .build());
+        }
+
+        return DashboardStatisticsResponse.builder()
+                .totalBooks(totalBooks)
+                .activeMembers(activeMembers)
+                .totalBorrowedBooks(totalBorrowedBooks)
+                .overdueBooks(overdueBooks)
+                .monthlyLoanData(monthlyLoanData)
+                .categoryDistribution(categoryDistribution)
+                .recentActivities(recentActivities)
+                .build();
     }
 
     private BookResponse mapToBookResponse(BookEntity book) {
