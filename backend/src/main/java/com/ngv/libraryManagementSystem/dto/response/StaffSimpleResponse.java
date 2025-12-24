@@ -1,5 +1,6 @@
 package com.ngv.libraryManagementSystem.dto.response;
 
+import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ public class StaffSimpleResponse {
     private String lastName;
     private String email;
     private String phone;
+    private MemberStatusEnum status;
 }
 
 

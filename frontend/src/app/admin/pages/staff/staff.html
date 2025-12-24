@@ -40,7 +40,11 @@
                         <td>{{ s.email }}</td>
                         <td>{{ s.phone }}</td>
                         <td>{{ s.username }}</td>
-                        <td>{{ s.status || '-' }}</td>
+                        <td>
+                          <span class="status-badge status-{{ s.status?.toLowerCase() }}">
+                            {{ s.status }}
+                          </span>
+                        </td>
                       </tr>
                     }
                   </tbody>

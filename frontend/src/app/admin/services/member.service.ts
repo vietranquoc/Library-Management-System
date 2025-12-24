@@ -28,5 +28,9 @@ export class MemberService {
   getMemberById(id: number): Observable<ApiResponse<MemberResponse>> {
     return this.http.get<ApiResponse<MemberResponse>>(`${this.baseUrl}/${id}`);
   }
+
+  getMyProfile(): Observable<ApiResponse<MemberResponse>> {
+    return this.http.get<ApiResponse<MemberResponse>>(`${this.baseUrl}/profile`);
+  }
 }
 

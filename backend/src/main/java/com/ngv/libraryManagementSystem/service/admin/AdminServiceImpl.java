@@ -173,7 +173,8 @@ public class AdminServiceImpl implements AdminService {
                             m != null ? m.getFirstName() : null,
                             m != null ? m.getLastName() : null,
                             m != null ? m.getEmail() : null,
-                            m != null ? m.getPhone() : null
+                            m != null ? m.getPhone() : null,
+                            m != null ? m.getStatus() : null
                     );
                 })
                 .collect(Collectors.toList());

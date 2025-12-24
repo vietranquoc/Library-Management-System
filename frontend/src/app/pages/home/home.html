@@ -1,19 +1,176 @@
 <div class="home-wrapper">
   <header class="home-header">
     <div class="logo">📚 Library Management</div>
-    <button class="logout-btn" (click)="onLogout()">
-      Đăng xuất
-    </button>
+    <div class="header-right">
+      @if (member) {
+        <span class="welcome-text">Xin chào, {{ member.firstName }} {{ member.lastName }}</span>
+      }
+      <button class="logout-btn" (click)="onLogout()">
+        Đăng xuất
+      </button>
+    </div>
   </header>
 
   <main class="home-main">
-    <section class="welcome-card">
-      <h1>Chào mừng bạn đến với hệ thống quản lý thư viện</h1>
-      <p>
-        Đây là trang home demo sau khi đăng nhập thành công.
-        Sau này bạn có thể thêm thống kê sách, độc giả, mượn trả,...
-      </p>
-    </section>
+    @if (loading) {
+      <div class="loading-container">
+        <div class="loading">Đang tải dữ liệu...</div>
+      </div>
+    } @else if (errorMessage) {
+      <div class="error-container">
+        <div class="alert alert-error">{{ errorMessage }}</div>
+        <button class="retry-btn" (click)="loadMemberData()">Thử lại</button>
+      </div>
+    } @else {
+      <!-- Member Profile Section -->
+      @if (member) {
+        <section class="profile-section">
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="profile-avatar">👤</div>
+              <div class="profile-info">
+                <h2>{{ member.firstName }} {{ member.lastName }}</h2>
+                <p class="profile-email">{{ member.email }}</p>
+                <p class="profile-phone">📞 {{ member.phone }}</p>
+              </div>
+            </div>
+            <div class="profile-details">
+              <div class="detail-item">
+                <span class="detail-label">Ngày tham gia:</span>
+                <span class="detail-value">{{ formatDate(member.joinDate) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Trạng thái:</span>
+                <span class="detail-value status-badge" [class.active]="member.status === 'ACTIVE'">
+                  {{ member.status === 'ACTIVE' ? 'Hoạt động' : member.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Statistics Section -->
+      <section class="stats-section">
+        <h2 class="section-title">Thống kê</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-info">
+              <h3>Đang mượn</h3>
+              <p class="stat-value">{{ getActiveLoans().length }}</p>
+            </div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-info">
+              <h3>Quá hạn</h3>
+              <p class="stat-value">{{ getOverdueLoans().length }}</p>
+            </div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-icon">✅</div>
+            <div class="stat-info">
+              <h3>Đã trả</h3>
+              <p class="stat-value">{{ getReturnedLoans().length }}</p>
+            </div>
+          </div>
+          <div class="stat-card stat-info">
+            <div class="stat-icon">📚</div>
+            <div class="stat-info">
+              <h3>Tổng mượn</h3>
+              <p class="stat-value">{{ loans.length }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Loans Section -->
+      <section class="loans-section">
+        <div class="section-header">
+          <h2 class="section-title">Sách đang mượn</h2>
+          <button class="refresh-btn" (click)="loadMemberData()" [disabled]="loading">
+            🔄 Làm mới
+          </button>
+        </div>
+
+        @if (getActiveLoans().length === 0) {
+          <div class="empty-state">
+            <p>Bạn chưa mượn sách nào.</p>
+            <a routerLink="/admin/books" class="browse-btn">Tìm sách</a>
+          </div>
+        } @else {
+          <div class="loans-list">
+            @for (loan of getActiveLoans(); track loan.id) {
+              <div class="loan-card" [class.overdue]="getOverdueLoans().includes(loan)">
+                <div class="loan-header">
+                  <h3 class="loan-title">{{ loan.book.title }}</h3>
+                  <span class="loan-status" [ngClass]="getStatusClass(loan.status)">
+                    {{ getStatusLabel(loan.status) }}
+                  </span>
+                </div>
+                <div class="loan-details">
+                  <div class="loan-detail-item">
+                    <span class="detail-label">ISBN:</span>
+                    <span class="detail-value">{{ loan.book.isbn }}</span>
+                  </div>
+                  <div class="loan-detail-item">
+                    <span class="detail-label">Ngày mượn:</span>
+                    <span class="detail-value">{{ formatDate(loan.borrowDate) }}</span>
+                  </div>
+                  <div class="loan-detail-item">
+                    <span class="detail-label">Hạn trả:</span>
+                    <span class="detail-value" [class.overdue-date]="getOverdueLoans().includes(loan)">
+                      {{ formatDate(loan.dueDate) }}
+                    </span>
+                  </div>
+                </div>
+                @if (getOverdueLoans().includes(loan)) {
+                  <div class="overdue-warning">
+                    ⚠️ Sách này đã quá hạn trả!
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Recent Returns Section -->
+      @if (getReturnedLoans().length > 0) {
+        <section class="loans-section">
+          <h2 class="section-title">Lịch sử mượn sách</h2>
+          <div class="loans-list">
+            @for (loan of getReturnedLoans().slice(0, 5); track loan.id) {
+              <div class="loan-card returned">
+                <div class="loan-header">
+                  <h3 class="loan-title">{{ loan.book.title }}</h3>
+                  <span class="loan-status status-returned">
+                    {{ getStatusLabel(loan.status) }}
+                  </span>
+                </div>
+                <div class="loan-details">
+                  <div class="loan-detail-item">
+                    <span class="detail-label">ISBN:</span>
+                    <span class="detail-value">{{ loan.book.isbn }}</span>
+                  </div>
+                  <div class="loan-detail-item">
+                    <span class="detail-label">Ngày mượn:</span>
+                    <span class="detail-value">{{ formatDate(loan.borrowDate) }}</span>
+                  </div>
+                  @if (loan.returnDate) {
+                    <div class="loan-detail-item">
+                      <span class="detail-label">Ngày trả:</span>
+                      <span class="detail-value">{{ formatDate(loan.returnDate) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
   </main>
 </div>
 

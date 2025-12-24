@@ -41,5 +41,11 @@ export class LoanService {
       `${this.baseUrl}/member/${memberId}`
     );
   }
+
+  getMyLoans(): Observable<ApiResponse<LoanResponse[]>> {
+    return this.http.get<ApiResponse<LoanResponse[]>>(
+      `${this.baseUrl}/my-loans`
+    );
+  }
 }
 

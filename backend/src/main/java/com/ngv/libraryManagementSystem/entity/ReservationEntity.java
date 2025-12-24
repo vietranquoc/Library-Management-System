@@ -25,7 +25,7 @@ public class ReservationEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReservationStatusEnum status;
+    private ReservationStatusEnum status = ReservationStatusEnum.PENDING;
 
     @ManyToOne
     @JoinColumn(name = "member_id")

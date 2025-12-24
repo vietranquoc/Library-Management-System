@@ -5,6 +5,7 @@ import com.ngv.libraryManagementSystem.dto.response.ReservationResponse;
 import com.ngv.libraryManagementSystem.entity.BookEntity;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.entity.ReservationEntity;
+import com.ngv.libraryManagementSystem.enums.ReservationStatusEnum;
 import com.ngv.libraryManagementSystem.exception.BadRequestException;
 import com.ngv.libraryManagementSystem.repository.BookRepository;
 import com.ngv.libraryManagementSystem.repository.LoanRepository;
@@ -56,6 +57,7 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setBook(book);
         reservation.setReservationDate(LocalDate.now());
         reservation.setNotified(false);
+        reservation.setStatus(ReservationStatusEnum.PENDING);
 
         ReservationEntity savedReservation = reservationRepository.save(reservation);
         return mapToReservationResponse(savedReservation);

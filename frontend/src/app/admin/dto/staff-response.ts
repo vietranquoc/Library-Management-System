@@ -5,7 +5,7 @@ export interface StaffResponse {
   username: string;
   email: string;
   phone: string;
-  status?: string;
+  status: string;
 }
 
 

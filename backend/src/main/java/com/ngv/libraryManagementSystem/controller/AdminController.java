@@ -30,9 +30,7 @@ public class AdminController {
      */
     @PostMapping("/categories")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> createCategory(
-            @Valid @RequestBody CreateCategoryRequest request
-    ) {
+    public ResponseEntity<ApiResponse<Void>> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         adminService.createCategory(request);
         return ResponseEntity.ok(new ApiResponse<>(200, "Thêm thể loại thành công", null));
     }
@@ -50,9 +48,7 @@ public class AdminController {
      */
     @PostMapping("/books")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
-    public ResponseEntity<ApiResponse<BookResponse>> createBook(
-            @Valid @RequestBody CreateBookRequest request
-    ) {
+    public ResponseEntity<ApiResponse<BookResponse>> createBook(@Valid @RequestBody CreateBookRequest request) {
         BookResponse book = adminService.createBook(request);
         return ResponseEntity.ok(new ApiResponse<>(200, "Thêm sách thành công", book));
     }
@@ -71,9 +67,7 @@ public class AdminController {
      */
     @PostMapping("/staff")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Long>> createStaff(
-            @Valid @RequestBody CreateStaffRequest request
-    ) {
+    public ResponseEntity<ApiResponse<Long>> createStaff(@Valid @RequestBody CreateStaffRequest request) {
         Long staffId = adminService.createStaff(request);
         return ResponseEntity.ok(new ApiResponse<>(200, "Thêm nhân viên thành công", staffId));
     }
