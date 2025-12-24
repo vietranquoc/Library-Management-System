@@ -194,6 +194,12 @@
                 {{ selectedBook.availableCopies }}
               </span>
             </div>
+            @if (selectedBook.description) {
+              <div class="detail-row description-row">
+                <span class="detail-label">Mô tả:</span>
+                <div class="detail-value description-text">{{ selectedBook.description }}</div>
+              </div>
+            }
           </div>
         </div>
         <div class="modal-footer">

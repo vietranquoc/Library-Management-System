@@ -497,6 +497,21 @@
   font-weight: 600;
 }
 
+.description-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.description-text {
+  color: #374151;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 .modal-footer {
   display: flex;
   gap: 1rem;

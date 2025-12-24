@@ -26,13 +26,11 @@ public class BookEntity {
     @Column(unique = true)
     private String isbn;
 
-    private Integer quantity;
-
     @Column(columnDefinition = "text")
     private String description;
 
     @Lob
-    @Column(columnDefinition = "longtext", nullable = false)
+    @Column(columnDefinition = "longtext")
     private String image;
 
     @ManyToOne
@@ -52,4 +50,7 @@ public class BookEntity {
 
     @OneToMany(mappedBy = "book")
     private List<ReservationEntity> reservations;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookCopyEntity> copies;
 }

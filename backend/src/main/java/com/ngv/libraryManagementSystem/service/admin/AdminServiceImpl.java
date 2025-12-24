@@ -8,6 +8,7 @@ import com.ngv.libraryManagementSystem.dto.response.BookResponse;
 import com.ngv.libraryManagementSystem.dto.response.CategorySimpleResponse;
 import com.ngv.libraryManagementSystem.dto.response.StaffSimpleResponse;
 import com.ngv.libraryManagementSystem.entity.*;
+import com.ngv.libraryManagementSystem.enums.BookCopyStatusEnum;
 import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
 import com.ngv.libraryManagementSystem.exception.BadRequestException;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +30,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final CategoryRepository categoryRepository;
     private final BookRepository bookRepository;
+    private final BookCopyRepository bookCopyRepository;
     private final AuthorRepository authorRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -58,7 +61,6 @@ public class AdminServiceImpl implements AdminService {
         book.setTitle(request.getTitle());
         book.setPublicationYear(request.getPublicationYear());
         book.setIsbn(request.getIsbn());
-        book.setQuantity(request.getQuantity());
         book.setDescription(request.getDescription());
         book.setImage(request.getImage());
         book.setCategory(category);
@@ -99,6 +101,21 @@ public class AdminServiceImpl implements AdminService {
         }
 
         BookEntity saved = bookRepository.save(book);
+
+        // Tạo BookCopyEntity dựa trên quantity từ request
+        if (request.getQuantity() != null && request.getQuantity() > 0) {
+            List<BookCopyEntity> copies = new ArrayList<>();
+            for (int i = 1; i <= request.getQuantity(); i++) {
+                BookCopyEntity copy = new BookCopyEntity();
+                // Tạo barCode: ISBN-001, ISBN-002, ...
+                copy.setBarCode(saved.getIsbn() + "-" + String.format("%03d", i));
+                copy.setStatus(BookCopyStatusEnum.AVAILABLE);
+                copy.setBook(saved);
+                copies.add(copy);
+            }
+            bookCopyRepository.saveAll(copies);
+        }
+
         return mapToBookResponse(saved);
     }
 
@@ -182,17 +199,32 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private BookResponse mapToBookResponse(BookEntity book) {
-        int totalCopies = book.getQuantity() != null ? book.getQuantity() : 0;
-        // Đếm số lượng sách đang được mượn (chưa trả)
-        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
-        // Số sách còn sẵn = tổng số - số đang mượn
-        int availableCopies = Math.max(0, totalCopies - (int) activeLoans);
+        // Lấy danh sách BookCopy của sách này
+        List<BookCopyEntity> copies = bookCopyRepository.findByBook(book);
+        int totalCopies = copies.size();
+        
+        // Đếm số BookCopy có status AVAILABLE
+        long availableCount = copies.stream()
+                .filter(copy -> copy.getStatus() == BookCopyStatusEnum.AVAILABLE)
+                .count();
+        int availableCopies = (int) availableCount;
+        
+        // Map BookCopyInfo
+        List<BookResponse.BookCopyInfo> copyInfos = copies.stream()
+                .map(copy -> BookResponse.BookCopyInfo.builder()
+                        .id(copy.getId())
+                        .barCode(copy.getBarCode())
+                        .available(copy.getStatus() == BookCopyStatusEnum.AVAILABLE)
+                        .build())
+                .collect(Collectors.toList());
         
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
                 .isbn(book.getIsbn())
                 .publicationYear(book.getPublicationYear())
+                .image(book.getImage())
+                .description(book.getDescription())
                 .category(book.getCategory() != null ?
                         BookResponse.CategoryInfo.builder()
                                 .id(book.getCategory().getId())
@@ -205,6 +237,7 @@ public class AdminServiceImpl implements AdminService {
                                         .name(author.getName())
                                         .build())
                                 .collect(Collectors.toSet()) : null)
+                .copies(copyInfos)
                 .totalCopies(totalCopies)
                 .availableCopies(availableCopies)
                 .build();

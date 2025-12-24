@@ -16,7 +16,7 @@ public class LoanEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(nullable = false)
     private LocalDate loanDate;
@@ -32,4 +32,8 @@ public class LoanEntity {
     @ManyToOne
     @JoinColumn(name = "book_id")
     private BookEntity book;
+
+    @ManyToOne
+    @JoinColumn(name = "book_copy_id")
+    private BookCopyEntity bookCopy;
 }

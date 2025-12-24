@@ -17,6 +17,8 @@ public class BookResponse {
     private String title;
     private String isbn;
     private Integer publicationYear;
+    private String image;
+    private String description;
     private CategoryInfo category;
     private Set<AuthorInfo> authors;
     private List<BookCopyInfo> copies;

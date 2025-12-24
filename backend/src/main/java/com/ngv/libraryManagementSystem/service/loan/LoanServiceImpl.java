@@ -3,10 +3,13 @@ package com.ngv.libraryManagementSystem.service.loan;
 import com.ngv.libraryManagementSystem.dto.request.LoanRequest;
 import com.ngv.libraryManagementSystem.dto.request.ReturnBookRequest;
 import com.ngv.libraryManagementSystem.dto.response.LoanResponse;
+import com.ngv.libraryManagementSystem.entity.BookCopyEntity;
 import com.ngv.libraryManagementSystem.entity.BookEntity;
 import com.ngv.libraryManagementSystem.entity.LoanEntity;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
+import com.ngv.libraryManagementSystem.enums.BookCopyStatusEnum;
 import com.ngv.libraryManagementSystem.exception.BadRequestException;
+import com.ngv.libraryManagementSystem.repository.BookCopyRepository;
 import com.ngv.libraryManagementSystem.repository.BookRepository;
 import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
@@ -26,6 +29,7 @@ public class LoanServiceImpl implements LoanService {
 
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
+    private final BookCopyRepository bookCopyRepository;
     private final MemberRepository memberRepository;
     private final FineService fineService;
     private final ReservationService reservationService;
@@ -36,30 +40,63 @@ public class LoanServiceImpl implements LoanService {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Member not found with id: " + memberId));
 
-        BookEntity book = bookRepository.findById(request.getBookCopyId())
-                .orElseThrow(() -> new BadRequestException("Không tìm thấy sách với id: " + request.getBookCopyId()));
+        BookCopyEntity bookCopy;
+        BookEntity book;
 
-        if (book.getQuantity() == null || book.getQuantity() <= 0) {
-            throw new BadRequestException("Sách này chưa được cấu hình số lượng");
+        // Thử tìm BookCopy với ID được cung cấp
+        // Nếu không tìm thấy, coi như đó là bookId và tự động chọn BookCopy available đầu tiên
+        try {
+            bookCopy = bookCopyRepository.findById(request.getBookCopyId())
+                    .orElse(null);
+            
+            if (bookCopy != null) {
+                // Kiểm tra BookCopy có sẵn sàng để mượn không
+                if (bookCopy.getStatus() != BookCopyStatusEnum.AVAILABLE) {
+                    throw new BadRequestException("Bản sao sách này không sẵn sàng để mượn. Trạng thái: " + bookCopy.getStatus());
+                }
+                book = bookCopy.getBook();
+            } else {
+                // Không tìm thấy BookCopy, coi như đó là bookId
+                book = bookRepository.findById(request.getBookCopyId())
+                        .orElseThrow(() -> new BadRequestException("Không tìm thấy sách với id: " + request.getBookCopyId()));
+                
+                List<BookCopyEntity> availableCopies = bookCopyRepository.findAvailableCopiesByBookId(book.getId());
+                if (availableCopies.isEmpty()) {
+                    throw new BadRequestException("Hiện không còn bản nào của sách này để mượn");
+                }
+                
+                bookCopy = availableCopies.get(0);
+            }
+        } catch (Exception e) {
+            // Nếu có lỗi, thử coi như đó là bookId
+            book = bookRepository.findById(request.getBookCopyId())
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy sách với id: " + request.getBookCopyId()));
+            
+            List<BookCopyEntity> availableCopies = bookCopyRepository.findAvailableCopiesByBookId(book.getId());
+            if (availableCopies.isEmpty()) {
+                throw new BadRequestException("Hiện không còn bản nào của sách này để mượn");
+            }
+            
+            bookCopy = availableCopies.get(0);
         }
 
-        // Kiểm tra xem member đã mượn sách này chưa (chưa trả)
+        // Kiểm tra xem member đã mượn sách này chưa (chưa trả) - kiểm tra theo book
         boolean alreadyBorrowed = loanRepository.existsActiveLoanByMemberAndBook(memberId, book.getId());
         if (alreadyBorrowed) {
             throw new BadRequestException("Bạn đã mượn sách này rồi. Vui lòng trả sách trước khi mượn lại.");
         }
 
-        // Đếm số lượng lượt mượn hiện tại (chưa trả) của cuốn sách này
-        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
-        if (activeLoans >= book.getQuantity()) {
-            throw new BadRequestException("Hiện không còn bản nào của sách này để mượn");
-        }
-
+        // Tạo loan và cập nhật status của bookCopy
         LoanEntity loan = new LoanEntity();
         loan.setMember(member);
         loan.setBook(book);
+        loan.setBookCopy(bookCopy);
         loan.setLoanDate(LocalDate.now());
         loan.setDueDate(LocalDate.now().plusDays(7));
+
+        // Cập nhật status của bookCopy thành BORROWED
+        bookCopy.setStatus(BookCopyStatusEnum.BORROWED);
+        bookCopyRepository.save(bookCopy);
 
         LoanEntity savedLoan = loanRepository.save(loan);
         return mapToLoanResponse(savedLoan);
@@ -80,6 +117,12 @@ public class LoanServiceImpl implements LoanService {
         }
 
         loan.setReturnedDate(LocalDate.now());
+
+        // Cập nhật status của bookCopy thành AVAILABLE khi trả sách
+        if (loan.getBookCopy() != null) {
+            loan.getBookCopy().setStatus(BookCopyStatusEnum.AVAILABLE);
+            bookCopyRepository.save(loan.getBookCopy());
+        }
 
         LoanEntity savedLoan = loanRepository.save(loan);
 
@@ -141,7 +184,7 @@ public class LoanServiceImpl implements LoanService {
                                 .lastName(loan.getMember().getLastName())
                                 .email(loan.getMember().getEmail())
                                 .build() : null)
-                .bookCopyBarCode(null)
+                .bookCopyBarCode(loan.getBookCopy() != null ? loan.getBookCopy().getBarCode() : null)
                 .build();
     }
 }

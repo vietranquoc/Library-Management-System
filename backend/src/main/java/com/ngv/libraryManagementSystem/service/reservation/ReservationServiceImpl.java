@@ -5,10 +5,11 @@ import com.ngv.libraryManagementSystem.dto.response.ReservationResponse;
 import com.ngv.libraryManagementSystem.entity.BookEntity;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.entity.ReservationEntity;
+import com.ngv.libraryManagementSystem.enums.BookCopyStatusEnum;
 import com.ngv.libraryManagementSystem.enums.ReservationStatusEnum;
 import com.ngv.libraryManagementSystem.exception.BadRequestException;
+import com.ngv.libraryManagementSystem.repository.BookCopyRepository;
 import com.ngv.libraryManagementSystem.repository.BookRepository;
-import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
 import com.ngv.libraryManagementSystem.repository.ReservationRepository;
 import com.ngv.libraryManagementSystem.service.mail.MailService;
@@ -26,8 +27,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final BookRepository bookRepository;
+    private final BookCopyRepository bookCopyRepository;
     private final MemberRepository memberRepository;
-    private final LoanRepository loanRepository;
     private final MailService mailService;
 
     @Override
@@ -39,11 +40,9 @@ public class ReservationServiceImpl implements ReservationService {
         BookEntity book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new RuntimeException("Book not found with id: " + request.getBookId()));
 
-        // Kiểm tra còn bản để mượn không: dựa trên quantity - số loan đang active
-        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
-        if (book.getQuantity() == null || book.getQuantity() <= activeLoans) {
-            // Không còn bản để mượn => được phép tạo reservation
-        } else {
+        // Kiểm tra còn bản để mượn không: đếm số BookCopy có status AVAILABLE
+        long availableCopies = bookCopyRepository.countByBookIdAndStatus(book.getId(), BookCopyStatusEnum.AVAILABLE);
+        if (availableCopies > 0) {
             throw new BadRequestException("Sách đang còn bản để mượn trực tiếp, không cần đặt chỗ");
         }
 
@@ -100,30 +99,27 @@ public class ReservationServiceImpl implements ReservationService {
         // Find pending reservations for this book
         List<ReservationEntity> pendingReservations = reservationRepository.findPendingReservationsByBookId(bookId);
 
-        // Kiểm tra còn bản trống: quantity - activeLoans
-        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(bookId);
+        // Kiểm tra còn bản trống: đếm số BookCopy có status AVAILABLE
+        long availableCopies = bookCopyRepository.countByBookIdAndStatus(bookId, BookCopyStatusEnum.AVAILABLE);
 
-        if (!pendingReservations.isEmpty()) {
+        if (!pendingReservations.isEmpty() && availableCopies > 0) {
             BookEntity book = bookRepository.findById(bookId)
                     .orElseThrow(() -> new RuntimeException("Book not found with id: " + bookId));
 
-            int quantity = book.getQuantity() != null ? book.getQuantity() : 0;
-            if (activeLoans < quantity) {
-                // Có bản trống -> notify người đầu queue
-                ReservationEntity firstReservation = pendingReservations.get(0);
-                MemberEntity member = firstReservation.getMember();
+            // Có bản trống -> notify người đầu queue
+            ReservationEntity firstReservation = pendingReservations.get(0);
+            MemberEntity member = firstReservation.getMember();
 
-                String subject = "Sách đã sẵn sàng: " + book.getTitle();
-                String content = "Xin chào " + member.getFirstName() + " " + member.getLastName() + ",\n\n" +
-                        "Cuốn sách bạn đã đặt chỗ hiện đã sẵn sàng để mượn.\n\n" +
-                        "Sách: " + book.getTitle() + "\n" +
-                        "Ngày đặt: " + firstReservation.getReservationDate() + "\n\n" +
-                        "Vui lòng đến thư viện để mượn.\n";
+            String subject = "Sách đã sẵn sàng: " + book.getTitle();
+            String content = "Xin chào " + member.getFirstName() + " " + member.getLastName() + ",\n\n" +
+                    "Cuốn sách bạn đã đặt chỗ hiện đã sẵn sàng để mượn.\n\n" +
+                    "Sách: " + book.getTitle() + "\n" +
+                    "Ngày đặt: " + firstReservation.getReservationDate() + "\n\n" +
+                    "Vui lòng đến thư viện để mượn.\n";
 
-                mailService.sendMail(member.getEmail(), subject, content);
-                firstReservation.setNotified(true);
-                reservationRepository.save(firstReservation);
-            }
+            mailService.sendMail(member.getEmail(), subject, content);
+            firstReservation.setNotified(true);
+            reservationRepository.save(firstReservation);
         }
     }
 

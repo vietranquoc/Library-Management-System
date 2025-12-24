@@ -1,9 +1,11 @@
 package com.ngv.libraryManagementSystem.service.book;
 
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
+import com.ngv.libraryManagementSystem.entity.BookCopyEntity;
 import com.ngv.libraryManagementSystem.entity.BookEntity;
+import com.ngv.libraryManagementSystem.enums.BookCopyStatusEnum;
+import com.ngv.libraryManagementSystem.repository.BookCopyRepository;
 import com.ngv.libraryManagementSystem.repository.BookRepository;
-import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +18,7 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
-    private final LoanRepository loanRepository;
+    private final BookCopyRepository bookCopyRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -36,17 +38,32 @@ public class BookServiceImpl implements BookService {
     }
 
     private BookResponse mapToBookResponse(BookEntity book) {
-        int totalCopies = book.getQuantity() != null ? book.getQuantity() : 0;
-        // Đếm số lượng sách đang được mượn (chưa trả)
-        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
-        // Số sách còn sẵn = tổng số - số đang mượn
-        int availableCopies = Math.max(0, totalCopies - (int) activeLoans);
+        // Lấy danh sách BookCopy của sách này
+        List<BookCopyEntity> copies = bookCopyRepository.findByBook(book);
+        int totalCopies = copies.size();
+        
+        // Đếm số BookCopy có status AVAILABLE
+        long availableCount = copies.stream()
+                .filter(copy -> copy.getStatus() == BookCopyStatusEnum.AVAILABLE)
+                .count();
+        int availableCopies = (int) availableCount;
+        
+        // Map BookCopyInfo
+        List<BookResponse.BookCopyInfo> copyInfos = copies.stream()
+                .map(copy -> BookResponse.BookCopyInfo.builder()
+                        .id(copy.getId())
+                        .barCode(copy.getBarCode())
+                        .available(copy.getStatus() == BookCopyStatusEnum.AVAILABLE)
+                        .build())
+                .collect(Collectors.toList());
         
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
                 .isbn(book.getIsbn())
                 .publicationYear(book.getPublicationYear())
+                .image(book.getImage())
+                .description(book.getDescription())
                 .category(book.getCategory() != null ? 
                         BookResponse.CategoryInfo.builder()
                                 .id(book.getCategory().getId())
@@ -59,6 +76,7 @@ public class BookServiceImpl implements BookService {
                                         .name(author.getName())
                                         .build())
                                 .collect(Collectors.toSet()) : null)
+                .copies(copyInfos)
                 .totalCopies(totalCopies)
                 .availableCopies(availableCopies)
                 .build();
