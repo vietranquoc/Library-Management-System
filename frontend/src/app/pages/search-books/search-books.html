@@ -1,0 +1,216 @@
+<div class="search-books-wrapper">
+  <header class="search-header">
+    <div class="logo">📚 Library Management</div>
+    <div class="header-right">
+      <a routerLink="/home" class="nav-link">Trang chủ</a>
+      <button class="logout-btn" (click)="onLogout()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="search-main">
+    <div class="container">
+      <h1 class="page-title">Tìm kiếm sách</h1>
+
+      <!-- Search Form -->
+      <div class="search-card">
+        <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="title">Tiêu đề sách</label>
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                placeholder="Nhập tiêu đề sách..."
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="authorName">Tác giả</label>
+              <input
+                id="authorName"
+                type="text"
+                formControlName="authorName"
+                placeholder="Nhập tên tác giả..."
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="categoryId">Thể loại</label>
+              <select
+                id="categoryId"
+                formControlName="categoryId"
+                (change)="onSearch()"
+              >
+                <option [value]="null">Tất cả thể loại</option>
+                @for (category of categories; track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="publicationYear">Năm xuất bản</label>
+              <input
+                id="publicationYear"
+                type="number"
+                formControlName="publicationYear"
+                placeholder="VD: 2020"
+                min="1900"
+                max="2100"
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+              🔍 Tìm kiếm
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="onReset()" [disabled]="loading">
+              🔄 Làm mới
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Messages -->
+      @if (errorMessage) {
+        <div class="alert alert-error">{{ errorMessage }}</div>
+      }
+      @if (successMessage) {
+        <div class="alert alert-success">{{ successMessage }}</div>
+      }
+
+      <!-- Results -->
+      @if (loading) {
+        <div class="loading-container">
+          <div class="loading">Đang tải...</div>
+        </div>
+      } @else if (books.length === 0) {
+        <div class="empty-state">
+          <p>Không tìm thấy sách nào.</p>
+          <p class="empty-hint">Thử thay đổi tiêu chí tìm kiếm của bạn.</p>
+        </div>
+      } @else {
+        <div class="results-header">
+          <h2>Tìm thấy {{ books.length }} cuốn sách</h2>
+        </div>
+
+        <div class="books-grid">
+          @for (book of books; track book.id) {
+            <div class="book-card">
+              <div class="book-image">
+                @if (book.image) {
+                  <img [src]="book.image" [alt]="book.title" />
+                } @else {
+                  <div class="book-placeholder">📖</div>
+                }
+              </div>
+              <div class="book-info">
+                <h3 class="book-title">{{ book.title }}</h3>
+                <div class="book-meta">
+                  <p class="book-isbn">ISBN: {{ book.isbn }}</p>
+                  <p class="book-year">Năm: {{ book.publicationYear }}</p>
+                  @if (book.category) {
+                    <p class="book-category">Thể loại: {{ book.category.name }}</p>
+                  }
+                  @if (book.authors && book.authors.length > 0) {
+                    <p class="book-authors">Tác giả: {{ formatAuthors(book) }}</p>
+                  }
+                </div>
+                <div class="book-availability">
+                  <span class="availability-label">Sẵn có:</span>
+                  <span class="availability-value" [class.available]="book.availableCopies > 0" [class.unavailable]="book.availableCopies === 0">
+                    {{ book.availableCopies }}/{{ book.totalCopies }}
+                  </span>
+                </div>
+                <div class="book-actions">
+                  <button class="btn btn-sm btn-info" (click)="viewBookDetail(book)">
+                    👁️ Chi tiết
+                  </button>
+                  @if (canBorrow(book)) {
+                    <button class="btn btn-sm btn-success" (click)="borrowBook(book)" [disabled]="loading">
+                      📖 Mượn sách
+                    </button>
+                  }
+                  @if (canReserve(book)) {
+                    <button class="btn btn-sm btn-warning" (click)="reserveBook(book)" [disabled]="loading">
+                      📌 Đặt chỗ
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
+
+  <!-- Book Detail Modal -->
+  @if (showBookDetail && selectedBook) {
+    <div class="modal-overlay" (click)="closeBookDetail()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ selectedBook.title }}</h2>
+          <button class="modal-close" (click)="closeBookDetail()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="book-detail-image">
+            @if (selectedBook.image) {
+              <img [src]="selectedBook.image" [alt]="selectedBook.title" />
+            } @else {
+              <div class="book-placeholder-large">📖</div>
+            }
+          </div>
+          <div class="book-detail-info">
+            <div class="detail-row">
+              <span class="detail-label">ISBN:</span>
+              <span class="detail-value">{{ selectedBook.isbn }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Năm xuất bản:</span>
+              <span class="detail-value">{{ selectedBook.publicationYear }}</span>
+            </div>
+            @if (selectedBook.category) {
+              <div class="detail-row">
+                <span class="detail-label">Thể loại:</span>
+                <span class="detail-value">{{ selectedBook.category.name }}</span>
+              </div>
+            }
+            @if (selectedBook.authors && selectedBook.authors.length > 0) {
+              <div class="detail-row">
+                <span class="detail-label">Tác giả:</span>
+                <span class="detail-value">{{ formatAuthors(selectedBook) }}</span>
+              </div>
+            }
+            <div class="detail-row">
+              <span class="detail-label">Tổng số bản:</span>
+              <span class="detail-value">{{ selectedBook.totalCopies }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Sẵn có:</span>
+              <span class="detail-value" [class.available]="selectedBook.availableCopies > 0" [class.unavailable]="selectedBook.availableCopies === 0">
+                {{ selectedBook.availableCopies }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          @if (canBorrow(selectedBook)) {
+            <button class="btn btn-success" (click)="borrowBook(selectedBook)" [disabled]="loading">
+              📖 Mượn sách
+            </button>
+          }
+          @if (canReserve(selectedBook)) {
+            <button class="btn btn-warning" (click)="reserveBook(selectedBook)" [disabled]="loading">
+              📌 Đặt chỗ
+            </button>
+          }
+          <button class="btn btn-secondary" (click)="closeBookDetail()">Đóng</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

@@ -30,6 +30,12 @@ export const routes: Routes = [
       import('./pages/home/home').then((m) => m.Home),
   },
   {
+    path: 'books',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/search-books/search-books').then((m) => m.SearchBooks),
+  },
+  {
     path: 'admin',
     canActivate: [adminGuard],
     children: [

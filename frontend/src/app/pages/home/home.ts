@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
 import { MemberService, MemberResponse } from '../../admin/services/member.service';
 import { LoanService, LoanResponse } from '../../admin/services/loan.service';
 
@@ -11,11 +12,12 @@ import { LoanService, LoanResponse } from '../../admin/services/loan.service';
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
   member: MemberResponse | null = null;
   loans: LoanResponse[] = [];
   loading = false;
   errorMessage = '';
+  private routerSubscription?: Subscription;
 
   constructor(
     private readonly router: Router,
@@ -25,6 +27,21 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.loadMemberData();
+    
+    // Tự động reload khi quay lại trang home từ các trang khác
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        if (event.url === '/home' || event.urlAfterRedirects === '/home') {
+          this.loadMemberData();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   loadMemberData(): void {
@@ -58,20 +75,25 @@ export class Home implements OnInit {
   }
 
   getActiveLoans(): LoanResponse[] {
-    return this.loans.filter(loan => loan.status === 'BORROWED' || loan.status === 'ACTIVE');
+    // Loan đang mượn là loan chưa có returnedDate
+    return this.loans.filter(loan => !loan.returnedDate);
   }
 
   getOverdueLoans(): LoanResponse[] {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return this.loans.filter(loan => {
-      if (loan.status !== 'BORROWED' && loan.status !== 'ACTIVE') return false;
+      // Chỉ tính loan chưa trả
+      if (loan.returnedDate) return false;
       const dueDate = new Date(loan.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
       return dueDate < today;
     });
   }
 
   getReturnedLoans(): LoanResponse[] {
-    return this.loans.filter(loan => loan.status === 'RETURNED');
+    // Loan đã trả là loan có returnedDate
+    return this.loans.filter(loan => !!loan.returnedDate);
   }
 
   formatDate(dateString: string): string {
@@ -80,24 +102,32 @@ export class Home implements OnInit {
     return date.toLocaleDateString('vi-VN');
   }
 
-  getStatusLabel(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      'BORROWED': 'Đang mượn',
-      'ACTIVE': 'Đang mượn',
-      'RETURNED': 'Đã trả',
-      'OVERDUE': 'Quá hạn',
-    };
-    return statusMap[status] || status;
+  getStatusLabel(loan: LoanResponse): string {
+    if (loan.returnedDate) {
+      return 'Đã trả';
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(loan.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    if (dueDate < today) {
+      return 'Quá hạn';
+    }
+    return 'Đang mượn';
   }
 
-  getStatusClass(status: string): string {
-    const classMap: { [key: string]: string } = {
-      'BORROWED': 'status-active',
-      'ACTIVE': 'status-active',
-      'RETURNED': 'status-returned',
-      'OVERDUE': 'status-overdue',
-    };
-    return classMap[status] || '';
+  getStatusClass(loan: LoanResponse): string {
+    if (loan.returnedDate) {
+      return 'status-returned';
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(loan.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    if (dueDate < today) {
+      return 'status-overdue';
+    }
+    return 'status-active';
   }
 
   onLogout(): void {

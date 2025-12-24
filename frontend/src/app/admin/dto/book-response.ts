@@ -5,6 +5,8 @@ export interface BookResponse {
   publicationYear: number;
   totalCopies: number;
   availableCopies: number;
+  image?: string;
+  description?: string;
   category?: {
     id: number;
     name: string;

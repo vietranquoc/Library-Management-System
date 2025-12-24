@@ -25,5 +25,8 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     List<LoanEntity> findOverdueLoans(@Param("currentDate") LocalDate currentDate);
 
     long countByBookIdAndReturnedDateIsNull(Long bookId);
+
+    @Query("SELECT COUNT(l) > 0 FROM LoanEntity l WHERE l.member.id = :memberId AND l.book.id = :bookId AND l.returnedDate IS NULL")
+    boolean existsActiveLoanByMemberAndBook(@Param("memberId") Long memberId, @Param("bookId") Long bookId);
 }
 

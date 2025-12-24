@@ -36,8 +36,6 @@ public class LoanServiceImpl implements LoanService {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("Member not found with id: " + memberId));
 
-        // Với cấu trúc DB mới, LoanEntity tham chiếu trực tiếp BookEntity.
-        // LoanRequest.bookCopyId hiện được hiểu là bookId.
         BookEntity book = bookRepository.findById(request.getBookCopyId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy sách với id: " + request.getBookCopyId()));
 
@@ -45,14 +43,17 @@ public class LoanServiceImpl implements LoanService {
             throw new BadRequestException("Sách này chưa được cấu hình số lượng");
         }
 
+        // Kiểm tra xem member đã mượn sách này chưa (chưa trả)
+        boolean alreadyBorrowed = loanRepository.existsActiveLoanByMemberAndBook(memberId, book.getId());
+        if (alreadyBorrowed) {
+            throw new BadRequestException("Bạn đã mượn sách này rồi. Vui lòng trả sách trước khi mượn lại.");
+        }
+
         // Đếm số lượng lượt mượn hiện tại (chưa trả) của cuốn sách này
         long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
         if (activeLoans >= book.getQuantity()) {
             throw new BadRequestException("Hiện không còn bản nào của sách này để mượn");
         }
-
-        // TODO: Nếu muốn giới hạn 1 member không được mượn trùng cùng 1 sách,
-        // có thể kiểm tra thêm tại đây.
 
         LoanEntity loan = new LoanEntity();
         loan.setMember(member);

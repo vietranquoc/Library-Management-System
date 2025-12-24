@@ -3,6 +3,7 @@ package com.ngv.libraryManagementSystem.service.book;
 import com.ngv.libraryManagementSystem.dto.response.BookResponse;
 import com.ngv.libraryManagementSystem.entity.BookEntity;
 import com.ngv.libraryManagementSystem.repository.BookRepository;
+import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
+    private final LoanRepository loanRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -34,6 +36,12 @@ public class BookServiceImpl implements BookService {
     }
 
     private BookResponse mapToBookResponse(BookEntity book) {
+        int totalCopies = book.getQuantity() != null ? book.getQuantity() : 0;
+        // Đếm số lượng sách đang được mượn (chưa trả)
+        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
+        // Số sách còn sẵn = tổng số - số đang mượn
+        int availableCopies = Math.max(0, totalCopies - (int) activeLoans);
+        
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -51,8 +59,8 @@ public class BookServiceImpl implements BookService {
                                         .name(author.getName())
                                         .build())
                                 .collect(Collectors.toSet()) : null)
-                .totalCopies(book.getQuantity() != null ? book.getQuantity() : 0)
-                .availableCopies(book.getQuantity() != null ? book.getQuantity() : 0)
+                .totalCopies(totalCopies)
+                .availableCopies(availableCopies)
                 .build();
     }
 }

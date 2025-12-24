@@ -5,10 +5,9 @@ import { ApiResponse } from '../../auth/dto/api-response';
 
 export interface LoanResponse {
   id: number;
-  borrowDate: string;
-  returnDate?: string;
+  loanDate: string; // Backend trả về loanDate
+  returnedDate?: string; // Backend trả về returnedDate
   dueDate: string;
-  status: string;
   book: {
     id: number;
     title: string;

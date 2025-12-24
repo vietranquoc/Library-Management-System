@@ -5,9 +5,10 @@
       @if (member) {
         <span class="welcome-text">Xin chào, {{ member.firstName }} {{ member.lastName }}</span>
       }
-      <button class="logout-btn" (click)="onLogout()">
-        Đăng xuất
-      </button>
+      <a routerLink="/books" class="nav-link">📚 Tìm sách</a>
+    <button class="logout-btn" (click)="onLogout()">
+      Đăng xuất
+    </button>
     </div>
   </header>
 
@@ -97,7 +98,7 @@
         @if (getActiveLoans().length === 0) {
           <div class="empty-state">
             <p>Bạn chưa mượn sách nào.</p>
-            <a routerLink="/admin/books" class="browse-btn">Tìm sách</a>
+            <a routerLink="/books" class="browse-btn">Tìm sách</a>
           </div>
         } @else {
           <div class="loans-list">
@@ -105,8 +106,8 @@
               <div class="loan-card" [class.overdue]="getOverdueLoans().includes(loan)">
                 <div class="loan-header">
                   <h3 class="loan-title">{{ loan.book.title }}</h3>
-                  <span class="loan-status" [ngClass]="getStatusClass(loan.status)">
-                    {{ getStatusLabel(loan.status) }}
+                  <span class="loan-status" [ngClass]="getStatusClass(loan)">
+                    {{ getStatusLabel(loan) }}
                   </span>
                 </div>
                 <div class="loan-details">
@@ -116,7 +117,7 @@
                   </div>
                   <div class="loan-detail-item">
                     <span class="detail-label">Ngày mượn:</span>
-                    <span class="detail-value">{{ formatDate(loan.borrowDate) }}</span>
+                    <span class="detail-value">{{ formatDate(loan.loanDate) }}</span>
                   </div>
                   <div class="loan-detail-item">
                     <span class="detail-label">Hạn trả:</span>
@@ -146,7 +147,7 @@
                 <div class="loan-header">
                   <h3 class="loan-title">{{ loan.book.title }}</h3>
                   <span class="loan-status status-returned">
-                    {{ getStatusLabel(loan.status) }}
+                    {{ getStatusLabel(loan) }}
                   </span>
                 </div>
                 <div class="loan-details">
@@ -156,19 +157,19 @@
                   </div>
                   <div class="loan-detail-item">
                     <span class="detail-label">Ngày mượn:</span>
-                    <span class="detail-value">{{ formatDate(loan.borrowDate) }}</span>
+                    <span class="detail-value">{{ formatDate(loan.loanDate) }}</span>
                   </div>
-                  @if (loan.returnDate) {
+                  @if (loan.returnedDate) {
                     <div class="loan-detail-item">
                       <span class="detail-label">Ngày trả:</span>
-                      <span class="detail-value">{{ formatDate(loan.returnDate) }}</span>
+                      <span class="detail-value">{{ formatDate(loan.returnedDate) }}</span>
                     </div>
                   }
                 </div>
               </div>
             }
           </div>
-        </section>
+    </section>
       }
     }
   </main>

@@ -32,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final MemberRepository memberRepository;
+    private final LoanRepository loanRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -181,6 +182,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private BookResponse mapToBookResponse(BookEntity book) {
+        int totalCopies = book.getQuantity() != null ? book.getQuantity() : 0;
+        // Đếm số lượng sách đang được mượn (chưa trả)
+        long activeLoans = loanRepository.countByBookIdAndReturnedDateIsNull(book.getId());
+        // Số sách còn sẵn = tổng số - số đang mượn
+        int availableCopies = Math.max(0, totalCopies - (int) activeLoans);
+        
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -198,8 +205,8 @@ public class AdminServiceImpl implements AdminService {
                                         .name(author.getName())
                                         .build())
                                 .collect(Collectors.toSet()) : null)
-                .totalCopies(book.getQuantity() != null ? book.getQuantity() : 0)
-                .availableCopies(book.getQuantity() != null ? book.getQuantity() : 0)
+                .totalCopies(totalCopies)
+                .availableCopies(availableCopies)
                 .build();
     }
 }
