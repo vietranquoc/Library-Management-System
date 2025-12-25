@@ -52,5 +52,18 @@ export class LoanService {
       `${this.baseUrl}/my-loans`
     );
   }
+
+  getRequestedLoans(): Observable<ApiResponse<LoanResponse[]>> {
+    return this.http.get<ApiResponse<LoanResponse[]>>(
+      `${this.baseUrl}/requested`
+    );
+  }
+
+  assignBookCopy(loanId: number, barCode: string): Observable<ApiResponse<LoanResponse>> {
+    return this.http.post<ApiResponse<LoanResponse>>(
+      `${this.baseUrl}/${loanId}/assign-copy`,
+      { barCode }
+    );
+  }
 }
 

@@ -48,5 +48,8 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
 
     @Query("SELECT l FROM LoanEntity l ORDER BY l.id DESC")
     List<LoanEntity> findAllOrderByIdDesc();
+
+    @Query("SELECT l FROM LoanEntity l WHERE l.status = :status ORDER BY l.id DESC")
+    List<LoanEntity> findByStatusOrderByIdDesc(@Param("status") LoanStatusEnum status);
 }
 

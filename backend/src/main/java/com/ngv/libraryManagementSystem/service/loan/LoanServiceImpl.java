@@ -1,5 +1,6 @@
 package com.ngv.libraryManagementSystem.service.loan;
 
+import com.ngv.libraryManagementSystem.dto.request.AssignBookCopyRequest;
 import com.ngv.libraryManagementSystem.dto.request.LoanRequest;
 import com.ngv.libraryManagementSystem.dto.request.ReturnBookRequest;
 import com.ngv.libraryManagementSystem.dto.response.LoanResponse;
@@ -132,6 +133,59 @@ public class LoanServiceImpl implements LoanService {
     @Transactional(readOnly = true)
     public List<LoanResponse> getAllLoans() {
         return loanRepository.findAllOrderByIdDesc().stream()
+                .map(this::mapToLoanResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public LoanResponse assignBookCopyToLoan(Long loanId, AssignBookCopyRequest request) {
+        // Tìm loan theo ID
+        LoanEntity loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy phiếu mượn với id: " + loanId));
+
+        // Kiểm tra loan phải ở trạng thái REQUESTED
+        if (loan.getStatus() != LoanStatusEnum.REQUESTED) {
+            throw new BadRequestException("Chỉ có thể gán bản sao cho phiếu mượn ở trạng thái REQUESTED");
+        }
+
+        // Kiểm tra loan đã có BookCopy chưa
+        if (loan.getBookCopy() != null) {
+            throw new BadRequestException("Phiếu mượn này đã được gán bản sao rồi");
+        }
+
+        // Tìm BookCopy theo barCode
+        BookCopyEntity bookCopy = bookCopyRepository.findByBarCode(request.getBarCode())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy bản sao sách với mã vạch: " + request.getBarCode()));
+
+        // Kiểm tra BookCopy có thuộc về sách của loan không
+        if (!bookCopy.getBook().getId().equals(loan.getBook().getId())) {
+            throw new BadRequestException("Bản sao sách này không thuộc về sách trong phiếu mượn");
+        }
+
+        // Kiểm tra BookCopy có AVAILABLE không
+        if (bookCopy.getStatus() != BookCopyStatusEnum.AVAILABLE) {
+            throw new BadRequestException("Bản sao sách này không sẵn sàng để mượn. Trạng thái: " + bookCopy.getStatus());
+        }
+
+        // Gán BookCopy cho loan
+        loan.setBookCopy(bookCopy);
+        loan.setLoanDate(LocalDate.now());
+        loan.setDueDate(LocalDate.now().plusDays(7));
+        loan.setStatus(LoanStatusEnum.BORROWED);
+
+        // Cập nhật status của BookCopy thành BORROWED
+        bookCopy.setStatus(BookCopyStatusEnum.BORROWED);
+        bookCopyRepository.save(bookCopy);
+
+        LoanEntity savedLoan = loanRepository.save(loan);
+        return mapToLoanResponse(savedLoan);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LoanResponse> getRequestedLoans() {
+        return loanRepository.findByStatusOrderByIdDesc(LoanStatusEnum.REQUESTED).stream()
                 .map(this::mapToLoanResponse)
                 .collect(Collectors.toList());
     }

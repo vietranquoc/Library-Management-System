@@ -1,0 +1,169 @@
+<div class="staff-wrapper">
+  <header class="staff-header">
+    <div class="logo">📚 Library Management - Staff</div>
+    <div class="header-right">
+      <span class="username">Xin chào, {{ getUsername() }}</span>
+      <button class="logout-btn" (click)="onLogout()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <div class="staff-container">
+    <app-staff-sidebar></app-staff-sidebar>
+
+    <main class="staff-main">
+      <div class="page-content">
+        <h1>Phiếu mượn chờ xử lý</h1>
+
+        @if (loading) {
+          <div class="loading-state">
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        } @else if (errorMessage && !selectedLoan) {
+          <div class="error-state">
+            <p>{{ errorMessage }}</p>
+            <button class="retry-btn" (click)="loadRequestedLoans()">Thử lại</button>
+          </div>
+        } @else {
+          <div class="content-grid">
+            <!-- Danh sách phiếu mượn -->
+            <div class="loans-list-card">
+              <h2>Danh sách phiếu mượn chờ xử lý</h2>
+              @if (loans.length === 0) {
+                <div class="empty-state">
+                  <p>Không có phiếu mượn nào chờ xử lý</p>
+                </div>
+              } @else {
+                <div class="loans-list">
+                  @for (loan of loans; track loan.id) {
+                    <div 
+                      class="loan-item" 
+                      [class.active]="selectedLoan?.id === loan.id"
+                      (click)="selectLoan(loan)"
+                    >
+                      <div class="loan-item-header">
+                        <h3>{{ loan.book.title }}</h3>
+                        <span class="loan-id">#{{ loan.id }}</span>
+                      </div>
+                      <div class="loan-item-info">
+                        <p><strong>Thành viên:</strong> {{ loan.member.firstName }} {{ loan.member.lastName }}</p>
+                        <p><strong>Email:</strong> {{ loan.member.email }}</p>
+                        <p><strong>ISBN:</strong> {{ loan.book.isbn }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Form gán bản sao sách -->
+            @if (selectedLoan) {
+              <div class="assign-form-card">
+                <h2>Gán bản sao sách</h2>
+                
+                <div class="loan-details">
+                  <div class="detail-section">
+                    <h3>Thông tin phiếu mượn</h3>
+                    <div class="detail-item">
+                      <span class="label">ID:</span>
+                      <span class="value">#{{ selectedLoan.id }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">Sách:</span>
+                      <span class="value">{{ selectedLoan.book.title }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">ISBN:</span>
+                      <span class="value">{{ selectedLoan.book.isbn }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">Thành viên:</span>
+                      <span class="value">{{ selectedLoan.member.firstName }} {{ selectedLoan.member.lastName }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="label">Email:</span>
+                      <span class="value">{{ selectedLoan.member.email }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="assign-section">
+                  <h3>Chọn bản sao sách</h3>
+                  <div class="form-group">
+                    <label for="barCode">Mã vạch (Bar Code)</label>
+
+                    @if (availableCopies.length > 0) {
+                      <select
+                        id="barCode"
+                        class="bar-code-input"
+                        [(ngModel)]="barCode"
+                        [disabled]="assigning"
+                      >
+                        <option [ngValue]="''" disabled>Chọn một bản sao sách</option>
+                        @for (copy of availableCopies; track copy.id) {
+                          <option [ngValue]="copy.barCode">
+                            {{ copy.barCode }}
+                          </option>
+                        }
+                      </select>
+                      <small class="hint">
+                        Chọn mã vạch của bản sao sách thực tế mà thành viên sẽ nhận
+                      </small>
+                    } @else {
+                      <input
+                        id="barCode"
+                        type="text"
+                        [(ngModel)]="barCode"
+                        placeholder="Không có bản sao AVAILABLE - nhập tay nếu cần"
+                        class="bar-code-input"
+                        (keyup.enter)="assignBookCopy()"
+                        [disabled]="assigning"
+                      />
+                      <small class="hint">
+                        Hiện không tìm thấy bản sao AVAILABLE; có thể nhập mã vạch thủ công
+                      </small>
+                    }
+                  </div>
+
+                  @if (successMessage) {
+                    <div class="alert alert-success">{{ successMessage }}</div>
+                  }
+                  @if (errorMessage) {
+                    <div class="alert alert-error">{{ errorMessage }}</div>
+                  }
+
+                  <div class="form-actions">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      (click)="selectedLoan = null; barCode = ''; errorMessage = ''; successMessage = '';"
+                      [disabled]="assigning"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      (click)="assignBookCopy()"
+                      [disabled]="assigning || !barCode.trim()"
+                    >
+                      @if (assigning) {
+                        Đang xử lý...
+                      } @else {
+                        Gán bản sao sách
+                      }
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="empty-selection">
+                <p>Chọn một phiếu mượn để gán bản sao sách</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

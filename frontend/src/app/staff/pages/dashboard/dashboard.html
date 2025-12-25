@@ -1,0 +1,75 @@
+<div class="staff-wrapper">
+  <header class="staff-header">
+    <div class="logo">📚 Library Management - Staff</div>
+    <div class="header-right">
+      <span class="username">Xin chào, {{ getUsername() }}</span>
+      <button class="logout-btn" (click)="onLogout()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <div class="staff-container">
+    <app-staff-sidebar></app-staff-sidebar>
+
+    <main class="staff-main">
+      <div class="dashboard-content">
+        <h1>Dashboard Nhân viên</h1>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+              <h3>Phiếu mượn chờ xử lý</h3>
+              <p class="stat-value">{{ requestedLoans.length }}</p>
+            </div>
+          </div>
+        </div>
+
+        @if (loading) {
+          <div class="loading-state">
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        } @else if (errorMessage) {
+          <div class="error-state">
+            <p>{{ errorMessage }}</p>
+            <button class="retry-btn" (click)="loadRequestedLoans()">Thử lại</button>
+          </div>
+        } @else if (requestedLoans.length > 0) {
+          <div class="requests-section">
+            <h2>Phiếu mượn chờ gán bản sao sách</h2>
+            <div class="requests-list">
+              @for (loan of requestedLoans; track loan.id) {
+                <div class="request-card">
+                  <div class="request-header">
+                    <div>
+                      <h3>{{ loan.book.title }}</h3>
+                      <p class="member-name">Thành viên: {{ loan.member.firstName }} {{ loan.member.lastName }}</p>
+                      <p class="member-email">{{ loan.member.email }}</p>
+                    </div>
+                    <a [routerLink]="['/staff/loan-requests', loan.id]" class="assign-btn">
+                      Gán bản sao sách →
+                    </a>
+                  </div>
+                  <div class="request-details">
+                    <div class="detail-item">
+                      <span class="detail-label">ISBN:</span>
+                      <span class="detail-value">{{ loan.book.isbn }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">Ngày yêu cầu:</span>
+                      <span class="detail-value">{{ loan.loanDate ? (loan.loanDate | date: 'dd/MM/yyyy') : 'Chưa có' }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Không có phiếu mượn nào chờ xử lý</p>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

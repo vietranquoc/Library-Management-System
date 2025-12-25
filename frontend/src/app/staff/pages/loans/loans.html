@@ -1,0 +1,87 @@
+<div class="staff-wrapper">
+  <header class="staff-header">
+    <div class="logo">📚 Library Management - Staff</div>
+    <div class="header-right">
+      <span class="username">Xin chào, {{ getUsername() }}</span>
+      <button class="logout-btn" (click)="onLogout()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <div class="staff-container">
+    <app-staff-sidebar></app-staff-sidebar>
+
+    <main class="staff-main">
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1>Quản lý Mượn trả</h1>
+            <p class="page-subtitle">Danh sách tất cả phiếu mượn trong hệ thống</p>
+          </div>
+          <button class="refresh-btn" (click)="loadAllLoans()" [disabled]="loading">
+            🔄 Làm mới
+          </button>
+        </div>
+
+        @if (errorMessage) {
+          <div class="alert alert-error">{{ errorMessage }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading">Đang tải...</div>
+        } @else if (loans.length > 0) {
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Sách</th>
+                  <th>Thành viên</th>
+                  <th>Ngày mượn</th>
+                  <th>Hạn trả</th>
+                  <th>Ngày trả</th>
+                  <th>Mã vạch</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (loan of loans; track loan.id) {
+                  <tr>
+                    <td>{{ loan.id }}</td>
+                    <td>
+                      <div class="book-info">
+                        <strong>{{ loan.book.title }}</strong>
+                        <small>ISBN: {{ loan.book.isbn }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="member-info">
+                        <strong>{{ loan.member.firstName }} {{ loan.member.lastName }}</strong>
+                        <small>{{ loan.member.email }}</small>
+                      </div>
+                    </td>
+                    <td>{{ loan.loanDate ? (loan.loanDate | date: 'dd/MM/yyyy') : '-' }}</td>
+                    <td>{{ loan.dueDate ? (loan.dueDate | date: 'dd/MM/yyyy') : '-' }}</td>
+                    <td>
+                      {{ loan.returnedDate ? (loan.returnedDate | date: 'dd/MM/yyyy') : '-' }}
+                    </td>
+                    <td>{{ loan.bookCopyBarCode || '-' }}</td>
+                    <td>
+                      <span class="status-badge" [ngClass]="getStatusClass(loan.status)">
+                        {{ getStatusLabel(loan.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>Chưa có phiếu mượn nào trong hệ thống</p>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

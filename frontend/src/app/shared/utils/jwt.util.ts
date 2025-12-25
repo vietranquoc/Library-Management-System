@@ -35,6 +35,14 @@ export class JwtUtil {
   }
 
   /**
+   * Kiểm tra user có role STAFF không
+   */
+  static isStaff(token: string): boolean {
+    const roles = this.getRoles(token);
+    return roles.includes('ROLE_STAFF');
+  }
+
+  /**
    * Kiểm tra user có role STAFF hoặc ADMIN không
    */
   static isAdminOrStaff(token: string): boolean {

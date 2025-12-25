@@ -56,10 +56,27 @@ export class Login {
         this.successMessage = res.message || 'Đăng nhập thành công';
         
         // Kiểm tra role và redirect
-        const token = localStorage.getItem('access_token');
-        if (token && JwtUtil.isAdmin(token)) {
-          this.router.navigateByUrl('/admin/dashboard');
+        // Lấy token từ response hoặc localStorage (đảm bảo đã được lưu)
+        const token = res.data?.token || localStorage.getItem('access_token');
+        if (token) {
+          // Debug: log roles để kiểm tra
+          const roles = JwtUtil.getRoles(token);
+          console.log('User roles:', roles);
+          
+          if (JwtUtil.isAdmin(token)) {
+            console.log('Redirecting to admin dashboard');
+            this.router.navigateByUrl('/admin/dashboard');
+          } else if (JwtUtil.isStaff(token)) {
+            // Staff (không phải admin)
+            console.log('Redirecting to staff dashboard');
+            this.router.navigateByUrl('/staff/dashboard');
+          } else {
+            // Member
+            console.log('Redirecting to home (member)');
+            this.router.navigateByUrl('/home');
+          }
         } else {
+          console.error('No token found');
           this.router.navigateByUrl('/home');
         }
       },

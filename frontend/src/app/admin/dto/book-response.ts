@@ -5,6 +5,11 @@ export interface BookResponse {
   publicationYear: number;
   totalCopies: number;
   availableCopies: number;
+  copies?: Array<{
+    id: number;
+    barCode: string;
+    available: boolean;
+  }>;
   image?: string;
   description?: string;
   category?: {

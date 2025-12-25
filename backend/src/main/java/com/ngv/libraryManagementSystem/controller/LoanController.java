@@ -1,5 +1,6 @@
 package com.ngv.libraryManagementSystem.controller;
 
+import com.ngv.libraryManagementSystem.dto.request.AssignBookCopyRequest;
 import com.ngv.libraryManagementSystem.dto.request.LoanRequest;
 import com.ngv.libraryManagementSystem.dto.request.ReturnBookRequest;
 import com.ngv.libraryManagementSystem.dto.response.ApiResponse;
@@ -65,6 +66,22 @@ public class LoanController {
     public ResponseEntity<ApiResponse<List<LoanResponse>>> getAllLoans() {
         List<LoanResponse> loans = loanService.getAllLoans();
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách mượn sách thành công", loans));
+    }
+
+    @GetMapping("/requested")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<LoanResponse>>> getRequestedLoans() {
+        List<LoanResponse> loans = loanService.getRequestedLoans();
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy danh sách phiếu mượn chờ xử lý thành công", loans));
+    }
+
+    @PostMapping("/{loanId}/assign-copy")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<LoanResponse>> assignBookCopy(
+            @PathVariable Long loanId,
+            @Valid @RequestBody AssignBookCopyRequest request) {
+        LoanResponse loan = loanService.assignBookCopyToLoan(loanId, request);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Gán bản sao sách thành công", loan));
     }
 }
 

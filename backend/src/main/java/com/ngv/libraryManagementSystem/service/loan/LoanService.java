@@ -1,5 +1,6 @@
 package com.ngv.libraryManagementSystem.service.loan;
 
+import com.ngv.libraryManagementSystem.dto.request.AssignBookCopyRequest;
 import com.ngv.libraryManagementSystem.dto.request.LoanRequest;
 import com.ngv.libraryManagementSystem.dto.request.ReturnBookRequest;
 import com.ngv.libraryManagementSystem.dto.response.LoanResponse;
@@ -12,5 +13,7 @@ public interface LoanService {
     List<LoanResponse> getLoansByBookId(Long bookId);
     List<LoanResponse> getMemberLoans(Long memberId);
     List<LoanResponse> getAllLoans();
+    LoanResponse assignBookCopyToLoan(Long loanId, AssignBookCopyRequest request);
+    List<LoanResponse> getRequestedLoans();
 }
 

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './auth/pages/login/login';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { staffGuard } from './core/guards/staff.guard';
 
 export const routes: Routes = [
   {
@@ -68,6 +69,37 @@ export const routes: Routes = [
         path: 'loans',
         loadComponent: () =>
           import('./admin/pages/loans/loans').then((m) => m.AdminLoans),
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+    ],
+  },
+  {
+    path: 'staff',
+    canActivate: [staffGuard],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./staff/pages/dashboard/dashboard').then((m) => m.StaffDashboard),
+      },
+      {
+        path: 'loan-requests',
+        loadComponent: () =>
+          import('./staff/pages/loan-requests/loan-requests').then((m) => m.StaffLoanRequests),
+      },
+      {
+        path: 'loan-requests/:loanId',
+        loadComponent: () =>
+          import('./staff/pages/loan-requests/loan-requests').then((m) => m.StaffLoanRequests),
+      },
+      {
+        path: 'loans',
+        loadComponent: () =>
+          import('./staff/pages/loans/loans').then((m) => m.StaffLoans),
       },
       {
         path: '',
