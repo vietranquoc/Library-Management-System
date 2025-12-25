@@ -190,6 +190,23 @@ public class LoanServiceImpl implements LoanService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional
+    public void updateOverdueLoans() {
+        LocalDate currentDate = LocalDate.now();
+        // Tìm tất cả các loan có status BORROWED và đã quá hạn (chưa trả)
+        List<LoanEntity> overdueLoans = loanRepository.findOverdueLoansByStatus(
+                LoanStatusEnum.BORROWED, currentDate);
+
+        for (LoanEntity loan : overdueLoans) {
+            // Chỉ update nếu loan chưa được trả và status vẫn là BORROWED
+            if (loan.getReturnedDate() == null && loan.getStatus() == LoanStatusEnum.BORROWED) {
+                loan.setStatus(LoanStatusEnum.OVERDUE);
+                loanRepository.save(loan);
+            }
+        }
+    }
+
     private LoanResponse mapToLoanResponse(LoanEntity loan) {
         return LoanResponse.builder()
                 .id(loan.getId())

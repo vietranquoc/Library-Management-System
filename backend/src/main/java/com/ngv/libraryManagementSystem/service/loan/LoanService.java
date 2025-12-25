@@ -15,5 +15,6 @@ public interface LoanService {
     List<LoanResponse> getAllLoans();
     LoanResponse assignBookCopyToLoan(Long loanId, AssignBookCopyRequest request);
     List<LoanResponse> getRequestedLoans();
+    void updateOverdueLoans();
 }
 
