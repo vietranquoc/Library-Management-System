@@ -10,6 +10,10 @@ import { HttpParams } from '@angular/common/http';
 import { StaffResponse } from '../dto/staff-response';
 import { ConfigResponse } from '../dto/config-response';
 import { UpdateConfigRequest } from '../dto/update-config-request';
+import { ConfigListResponse } from '../dto/config-list-response';
+import { ConfigItemResponse } from '../dto/config-item-response';
+import { CreateConfigRequest } from '../dto/create-config-request';
+import { UpdateConfigValueRequest } from '../dto/update-config-value-request';
 
 @Injectable({
   providedIn: 'root',
@@ -80,6 +84,27 @@ export class AdminService {
 
   updateConfig(request: UpdateConfigRequest): Observable<ApiResponse<ConfigResponse>> {
     return this.http.put<ApiResponse<ConfigResponse>>(`${this.baseUrl}/config`, request);
+  }
+
+  // Key-value config methods
+  getAllConfigs(): Observable<ApiResponse<ConfigListResponse>> {
+    return this.http.get<ApiResponse<ConfigListResponse>>(`${this.baseUrl}/config/all`);
+  }
+
+  getConfigByKey(configKey: string): Observable<ApiResponse<ConfigItemResponse>> {
+    return this.http.get<ApiResponse<ConfigItemResponse>>(`${this.baseUrl}/config/${configKey}`);
+  }
+
+  createConfig(request: CreateConfigRequest): Observable<ApiResponse<ConfigItemResponse>> {
+    return this.http.post<ApiResponse<ConfigItemResponse>>(`${this.baseUrl}/config`, request);
+  }
+
+  updateConfigValue(configKey: string, request: UpdateConfigValueRequest): Observable<ApiResponse<ConfigItemResponse>> {
+    return this.http.put<ApiResponse<ConfigItemResponse>>(`${this.baseUrl}/config/${configKey}`, request);
+  }
+
+  deleteConfig(configKey: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/config/${configKey}`);
   }
 }
 
