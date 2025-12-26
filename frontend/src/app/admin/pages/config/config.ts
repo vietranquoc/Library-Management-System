@@ -47,7 +47,7 @@ export class AdminConfig implements OnInit {
     this.loadConfig();
   }
 
-  private loadConfig(): void {
+  loadConfig(): void {
     this.loadingData = true;
     this.errorMessage = '';
     this.successMessage = '';
