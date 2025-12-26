@@ -3,5 +3,5 @@ package com.ngv.libraryManagementSystem.enums;
 public enum MemberStatusEnum {
     ACTIVE,
     INACTIVE,
-    SUSPENDED
+    SUSPENDED  // Bị khóa do quá hạn
 }

@@ -8,6 +8,7 @@ import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.repository.FineRepository;
 import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
+import com.ngv.libraryManagementSystem.service.config.ConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,7 @@ public class FineServiceImpl implements FineService {
     private final FineRepository fineRepository;
     private final LoanRepository loanRepository;
     private final MemberRepository memberRepository;
-
-    private static final BigDecimal FINE_PER_DAY = new BigDecimal("10000"); // 10,000 VND per day
+    private final ConfigService configService;
 
     @Override
     @Transactional
@@ -45,8 +45,9 @@ public class FineServiceImpl implements FineService {
 
         if (returnedDate.isAfter(dueDate)) {
             long daysOverdue = ChronoUnit.DAYS.between(dueDate, returnedDate);
-            // Fine is calculated for each day overdue
-            BigDecimal fineAmount = FINE_PER_DAY.multiply(BigDecimal.valueOf(daysOverdue));
+            // Fine is calculated for each day overdue - sử dụng giá trị từ config
+            BigDecimal finePerDay = configService.getFinePerDay();
+            BigDecimal fineAmount = finePerDay.multiply(BigDecimal.valueOf(daysOverdue));
 
             FineEntity fine = new FineEntity();
             fine.setLoan(loan);
@@ -107,8 +108,9 @@ public class FineServiceImpl implements FineService {
                 // Issue fine if not already issued
                 if (fineRepository.findByLoan(loan).isEmpty()) {
                     long daysOverdue = ChronoUnit.DAYS.between(loan.getDueDate(), LocalDate.now());
-                    // Fine is calculated for each day overdue
-                    BigDecimal fineAmount = FINE_PER_DAY.multiply(BigDecimal.valueOf(daysOverdue));
+                    // Fine is calculated for each day overdue - sử dụng giá trị từ config
+                    BigDecimal finePerDay = configService.getFinePerDay();
+                    BigDecimal fineAmount = finePerDay.multiply(BigDecimal.valueOf(daysOverdue));
 
                     FineEntity fine = new FineEntity();
                     fine.setLoan(loan);

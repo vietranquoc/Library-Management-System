@@ -8,6 +8,8 @@ import { CreateStaffRequest } from '../dto/create-staff-request';
 import { BookResponse } from '../dto/book-response';
 import { HttpParams } from '@angular/common/http';
 import { StaffResponse } from '../dto/staff-response';
+import { ConfigResponse } from '../dto/config-response';
+import { UpdateConfigRequest } from '../dto/update-config-request';
 
 @Injectable({
   providedIn: 'root',
@@ -70,6 +72,14 @@ export class AdminService {
     return this.http.get<ApiResponse<import('../dto/dashboard-statistics').DashboardStatistics>>(
       `${this.baseUrl}/dashboard/statistics`
     );
+  }
+
+  getConfig(): Observable<ApiResponse<ConfigResponse>> {
+    return this.http.get<ApiResponse<ConfigResponse>>(`${this.baseUrl}/config`);
+  }
+
+  updateConfig(request: UpdateConfigRequest): Observable<ApiResponse<ConfigResponse>> {
+    return this.http.put<ApiResponse<ConfigResponse>>(`${this.baseUrl}/config`, request);
   }
 }
 

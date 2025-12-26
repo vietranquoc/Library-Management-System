@@ -1,10 +1,12 @@
 package com.ngv.libraryManagementSystem.config;
 
+import com.ngv.libraryManagementSystem.entity.ConfigEntity;
 import com.ngv.libraryManagementSystem.entity.MemberEntity;
 import com.ngv.libraryManagementSystem.entity.RoleEntity;
 import com.ngv.libraryManagementSystem.entity.UserEntity;
 import com.ngv.libraryManagementSystem.enums.MemberStatusEnum;
 import com.ngv.libraryManagementSystem.enums.RoleEnum;
+import com.ngv.libraryManagementSystem.repository.ConfigRepository;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
 import com.ngv.libraryManagementSystem.repository.RoleRepository;
 import com.ngv.libraryManagementSystem.repository.UserRepository;
@@ -13,6 +15,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -23,6 +26,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
+    private final ConfigRepository configRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -30,6 +34,7 @@ public class DataInitializer implements CommandLineRunner {
         initializeRoles();
         initializeAdminAccount();
         initializeStaffAccount();
+        initializeSystemConfig();
     }
 
     private void initializeRoles() {
@@ -84,6 +89,16 @@ public class DataInitializer implements CommandLineRunner {
             staffUser.setMember(staffMember);
             staffUser.setRoles(Set.of(staffRole));
             userRepository.save(staffUser);
+        }
+    }
+
+    private void initializeSystemConfig() {
+        if (configRepository.findFirstByOrderByIdAsc().isEmpty()) {
+            ConfigEntity config = new ConfigEntity();
+            config.setLoanPeriodDays(7);
+            config.setFinePerDay(new BigDecimal("10000"));
+            config.setMaxBooksPerMember(5);
+            configRepository.save(config);
         }
     }
 }

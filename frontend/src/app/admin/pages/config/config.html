@@ -1,0 +1,182 @@
+<div class="admin-wrapper">
+  <header class="admin-header">
+    <div class="logo">📚 Library Management - Admin</div>
+    <div class="header-right">
+      <a routerLink="/admin/dashboard" class="back-link">← Về Dashboard</a>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <app-admin-sidebar></app-admin-sidebar>
+
+    <main class="admin-main">
+      <div class="page-content">
+        <h1>Cấu hình Hệ thống</h1>
+        <p class="page-description">
+          Quản lý các thiết lập hệ thống như thời gian mượn sách, tiền phạt và giới hạn mượn sách.
+        </p>
+
+        @if (loadingData) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Đang tải cấu hình...</p>
+          </div>
+        } @else {
+          <div class="config-container">
+            <div class="config-card">
+              <div class="card-header">
+                <h2>⚙️ Cài đặt Hệ thống</h2>
+                <p class="card-description">
+                  Các thay đổi sẽ được áp dụng ngay lập tức cho các giao dịch mới.
+                </p>
+              </div>
+
+              @if (errorMessage) {
+                <div class="alert alert-error">{{ errorMessage }}</div>
+              }
+
+              @if (successMessage) {
+                <div class="alert alert-success">{{ successMessage }}</div>
+              }
+
+              <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="form-section">
+                  <h3>📅 Thời gian mượn sách</h3>
+                  <div class="form-group">
+                    <label for="loanPeriodDays">
+                      Số ngày mượn sách (ngày) *
+                      <span class="help-text">Thời gian tối đa mà thành viên có thể mượn một cuốn sách</span>
+                    </label>
+                    <input
+                      id="loanPeriodDays"
+                      type="number"
+                      formControlName="loanPeriodDays"
+                      min="1"
+                      placeholder="Ví dụ: 7"
+                    />
+                    @if (form.get('loanPeriodDays')?.invalid && form.get('loanPeriodDays')?.touched) {
+                      <span class="error-text">
+                        @if (form.get('loanPeriodDays')?.errors?.['required']) {
+                          Số ngày mượn sách là bắt buộc
+                        } @else if (form.get('loanPeriodDays')?.errors?.['min']) {
+                          Số ngày mượn sách phải lớn hơn 0
+                        }
+                      </span>
+                    }
+                    @if (config) {
+                      <div class="info-text">
+                        Hiện tại: <strong>{{ config.loanPeriodDays }} ngày</strong>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>💰 Tiền phạt</h3>
+                  <div class="form-group">
+                    <label for="finePerDay">
+                      Tiền phạt mỗi ngày quá hạn (VND) *
+                      <span class="help-text">Số tiền phạt tính cho mỗi ngày trả sách quá hạn</span>
+                    </label>
+                    <input
+                      id="finePerDay"
+                      type="number"
+                      formControlName="finePerDay"
+                      min="0"
+                      step="1000"
+                      placeholder="Ví dụ: 10000"
+                    />
+                    @if (form.get('finePerDay')?.invalid && form.get('finePerDay')?.touched) {
+                      <span class="error-text">
+                        @if (form.get('finePerDay')?.errors?.['required']) {
+                          Tiền phạt mỗi ngày là bắt buộc
+                        } @else if (form.get('finePerDay')?.errors?.['min']) {
+                          Tiền phạt mỗi ngày phải lớn hơn hoặc bằng 0
+                        }
+                      </span>
+                    }
+                    @if (config) {
+                      <div class="info-text">
+                        Hiện tại: <strong>{{ formatCurrency(config.finePerDay) }}</strong>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h3>📚 Giới hạn mượn sách</h3>
+                  <div class="form-group">
+                    <label for="maxBooksPerMember">
+                      Số sách tối đa mỗi thành viên *
+                      <span class="help-text">Số lượng sách tối đa mà một thành viên có thể mượn cùng lúc</span>
+                    </label>
+                    <input
+                      id="maxBooksPerMember"
+                      type="number"
+                      formControlName="maxBooksPerMember"
+                      min="1"
+                      placeholder="Ví dụ: 5"
+                    />
+                    @if (form.get('maxBooksPerMember')?.invalid && form.get('maxBooksPerMember')?.touched) {
+                      <span class="error-text">
+                        @if (form.get('maxBooksPerMember')?.errors?.['required']) {
+                          Số sách tối đa là bắt buộc
+                        } @else if (form.get('maxBooksPerMember')?.errors?.['min']) {
+                          Số sách tối đa phải lớn hơn 0
+                        }
+                      </span>
+                    }
+                    @if (config) {
+                      <div class="info-text">
+                        Hiện tại: <strong>{{ config.maxBooksPerMember }} cuốn</strong>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="submit-btn" [disabled]="loading || form.invalid">
+                    @if (loading) {
+                      <span class="btn-spinner"></span>
+                      Đang cập nhật...
+                    } @else {
+                      💾 Lưu cấu hình
+                    }
+                  </button>
+                  <button type="button" class="cancel-btn" (click)="loadConfig()" [disabled]="loading">
+                    🔄 Làm mới
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            @if (config) {
+              <div class="info-card">
+                <h3>ℹ️ Thông tin</h3>
+                <div class="info-list">
+                  <div class="info-item">
+                    <span class="info-label">ID cấu hình:</span>
+                    <span class="info-value">#{{ config.id }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Thời gian mượn:</span>
+                    <span class="info-value">{{ config.loanPeriodDays }} ngày</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Tiền phạt/ngày:</span>
+                    <span class="info-value">{{ formatCurrency(config.finePerDay) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Giới hạn mượn:</span>
+                    <span class="info-value">{{ config.maxBooksPerMember }} cuốn</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

@@ -17,6 +17,7 @@ import com.ngv.libraryManagementSystem.repository.LoanRepository;
 import com.ngv.libraryManagementSystem.repository.MemberRepository;
 import com.ngv.libraryManagementSystem.service.reservation.ReservationService;
 import com.ngv.libraryManagementSystem.service.fine.FineService;
+import com.ngv.libraryManagementSystem.service.config.ConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class LoanServiceImpl implements LoanService {
     private final MemberRepository memberRepository;
     private final FineService fineService;
     private final ReservationService reservationService;
+    private final ConfigService configService;
 
     @Override
     @Transactional
@@ -45,6 +47,21 @@ public class LoanServiceImpl implements LoanService {
         // Lấy Book theo bookId (member chỉ chọn sách, chưa chọn bản sao)
         BookEntity book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy sách với id: " + request.getBookId()));
+
+        // Kiểm tra số sách đang mượn (REQUESTED, BORROWED, OVERDUE) của member
+        List<LoanStatusEnum> activeStatuses = List.of(
+                LoanStatusEnum.REQUESTED,
+                LoanStatusEnum.BORROWED,
+                LoanStatusEnum.OVERDUE
+        );
+        long currentActiveLoans = loanRepository.countActiveLoansByMemberIdAndStatuses(memberId, activeStatuses);
+        Integer maxBooksPerMember = configService.getMaxBooksPerMember();
+        
+        if (currentActiveLoans >= maxBooksPerMember) {
+            throw new BadRequestException(
+                    String.format("Bạn đã mượn tối đa %d cuốn sách. Vui lòng trả sách trước khi mượn thêm.", maxBooksPerMember)
+            );
+        }
 
         // Kiểm tra xem member đã mượn sách này chưa (chưa trả) - kiểm tra theo book
         boolean alreadyBorrowed = loanRepository.existsActiveLoanByMemberAndBook(memberId, book.getId());
@@ -171,7 +188,9 @@ public class LoanServiceImpl implements LoanService {
         // Gán BookCopy cho loan
         loan.setBookCopy(bookCopy);
         loan.setLoanDate(LocalDate.now());
-        loan.setDueDate(LocalDate.now().plusDays(7));
+        // Sử dụng số ngày mượn từ config
+        Integer loanPeriodDays = configService.getLoanPeriodDays();
+        loan.setDueDate(LocalDate.now().plusDays(loanPeriodDays));
         loan.setStatus(LoanStatusEnum.BORROWED);
 
         // Cập nhật status của BookCopy thành BORROWED

@@ -36,6 +36,13 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     @Query("SELECT COUNT(l) > 0 FROM LoanEntity l WHERE l.bookCopy.id = :bookCopyId AND l.returnedDate IS NULL")
     boolean existsActiveLoanByBookCopy(@Param("bookCopyId") Long bookCopyId);
 
+    /**
+     * Đếm số loan đang active (REQUESTED, BORROWED, OVERDUE) của một member
+     * Các loan này được tính vào số sách đang mượn
+     */
+    @Query("SELECT COUNT(l) FROM LoanEntity l WHERE l.member.id = :memberId AND l.returnedDate IS NULL AND l.status IN :statuses")
+    long countActiveLoansByMemberIdAndStatuses(@Param("memberId") Long memberId, @Param("statuses") List<LoanStatusEnum> statuses);
+
     // Statistics queries
     @Query("SELECT COUNT(l) FROM LoanEntity l WHERE l.status IN :statuses")
     long countByStatusIn(@Param("statuses") List<LoanStatusEnum> statuses);

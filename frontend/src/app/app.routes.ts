@@ -71,6 +71,11 @@ export const routes: Routes = [
           import('./admin/pages/loans/loans').then((m) => m.AdminLoans),
       },
       {
+        path: 'config',
+        loadComponent: () =>
+          import('./admin/pages/config/config').then((m) => m.AdminConfig),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
